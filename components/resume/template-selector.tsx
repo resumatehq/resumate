@@ -31,24 +31,6 @@ export function TemplateSelector({ selectedTemplate, onSelectTemplate }: Templat
       description: "A simple, straightforward layout that focuses on content",
       image: "/placeholder.svg?height=200&width=150",
     },
-    {
-      id: "executive",
-      name: "Executive",
-      description: "An elegant design for senior positions and leadership roles",
-      image: "/placeholder.svg?height=200&width=150",
-    },
-    {
-      id: "creative",
-      name: "Creative",
-      description: "A bold design for creative industries and design roles",
-      image: "/placeholder.svg?height=200&width=150",
-    },
-    {
-      id: "technical",
-      name: "Technical",
-      description: "Optimized for technical roles with skills emphasis",
-      image: "/placeholder.svg?height=200&width=150",
-    },
   ]
 
   return (
