@@ -1,7 +1,9 @@
 "use client"
 
-import { Phone, Mail, MapPin, Globe, Linkedin, ExternalLink } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Phone, Mail, MapPin, Globe, Linkedin, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react"
 import { useResumeContext } from "@/context/resume-context"
+import { Button } from "@/components/ui/button"
 
 interface ResumePreviewProps {
   template: string
@@ -9,6 +11,9 @@ interface ResumePreviewProps {
 
 export function ResumePreview({ template }: ResumePreviewProps) {
   const { resumeData } = useResumeContext()
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const resumeContentRef = useRef<HTMLDivElement>(null)
 
   // Helper function to check if a section has content
   const hasContent = {
@@ -25,9 +30,46 @@ export function ResumePreview({ template }: ResumePreviewProps) {
     awards: () => resumeData.awards.some((award) => award.title?.trim() || award.issuer?.trim()),
   }
 
-  if (template === "professional") {
+  // Calculate total pages based on content height
+  useEffect(() => {
+    if (resumeContentRef.current) {
+      const contentHeight = resumeContentRef.current.scrollHeight
+      const pageHeight = 1123 // A4 height in pixels at 96 DPI (297mm)
+      const calculatedPages = Math.ceil(contentHeight / pageHeight)
+      setTotalPages(calculatedPages > 0 ? calculatedPages : 1)
+
+      // Reset to page 1 if current page is beyond total pages
+      if (currentPage > calculatedPages) {
+        setCurrentPage(1)
+      }
+    }
+  }, [resumeData, template, currentPage])
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+    }
+  }
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  // Template rendering functions
+  const renderProfessionalTemplate = () => {
     return (
-      <div className="bg-white text-black p-6 min-h-[600px] text-sm scale-[0.8] origin-top">
+      <div
+        ref={resumeContentRef}
+        className="bg-white text-black p-6 text-sm"
+        style={{
+          height: `${totalPages * 1123}px`, // A4 height in pixels at 96 DPI
+          width: "100%",
+          position: "relative",
+          top: `-${(currentPage - 1) * 1123}px`,
+        }}
+      >
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">{resumeData.personal.fullName || "Your Name"}</h1>
@@ -290,13 +332,22 @@ export function ResumePreview({ template }: ResumePreviewProps) {
     )
   }
 
-  if (template === "modern") {
+  const renderModernTemplate = () => {
     return (
-      <div className="bg-white text-black min-h-[600px] text-sm scale-[0.8] origin-top">
+      <div
+        ref={resumeContentRef}
+        className="bg-white text-black text-sm"
+        style={{
+          height: `${totalPages * 1123}px`, // A4 height in pixels at 96 DPI
+          width: "100%",
+          position: "relative",
+          top: `-${(currentPage - 1) * 1123}px`,
+        }}
+      >
         {/* Header with sidebar layout */}
-        <div className="flex flex-col md:flex-row">
+        <div className="flex flex-col md:flex-row h-full">
           {/* Sidebar */}
-          <div className="bg-gray-100 p-6 md:w-1/3">
+          <div className="bg-gray-100 p-6 md:w-1/3 h-full">
             <div className="text-center mb-6">
               <h1 className="text-xl font-bold text-gray-800">{resumeData.personal.fullName || "Your Name"}</h1>
               <p className="text-gray-600">{resumeData.personal.jobTitle || "Your Job Title"}</p>
@@ -589,177 +640,248 @@ export function ResumePreview({ template }: ResumePreviewProps) {
     )
   }
 
-  // Default minimal template
-  return (
-    <div className="bg-white text-black p-6 min-h-[600px] text-sm scale-[0.8] origin-top">
-      <h1 className="text-xl font-bold mb-1">{resumeData.personal.fullName || "Your Name"}</h1>
-      <p className="text-gray-600 mb-2">{resumeData.personal.jobTitle || "Your Job Title"}</p>
+  const renderMinimalTemplate = () => {
+    return (
+      <div
+        ref={resumeContentRef}
+        className="bg-white text-black p-6 text-sm"
+        style={{
+          height: `${totalPages * 1123}px`, // A4 height in pixels at 96 DPI
+          width: "100%",
+          position: "relative",
+          top: `-${(currentPage - 1) * 1123}px`,
+        }}
+      >
+        <h1 className="text-xl font-bold mb-1">{resumeData.personal.fullName || "Your Name"}</h1>
+        <p className="text-gray-600 mb-2">{resumeData.personal.jobTitle || "Your Job Title"}</p>
 
-      <div className="flex flex-wrap gap-2 text-xs text-gray-600 mb-4">
-        {resumeData.personal.email && <span>{resumeData.personal.email}</span>}
-        {resumeData.personal.email && resumeData.personal.phone && <span>•</span>}
-        {resumeData.personal.phone && <span>{resumeData.personal.phone}</span>}
-        {(resumeData.personal.email || resumeData.personal.phone) && resumeData.personal.location && <span>•</span>}
-        {resumeData.personal.location && <span>{resumeData.personal.location}</span>}
-      </div>
+        <div className="flex flex-wrap gap-2 text-xs text-gray-600 mb-4">
+          {resumeData.personal.email && <span>{resumeData.personal.email}</span>}
+          {resumeData.personal.email && resumeData.personal.phone && <span>•</span>}
+          {resumeData.personal.phone && <span>{resumeData.personal.phone}</span>}
+          {(resumeData.personal.email || resumeData.personal.phone) && resumeData.personal.location && <span>•</span>}
+          {resumeData.personal.location && <span>{resumeData.personal.location}</span>}
+        </div>
 
-      {hasContent.summary() && <p className="mb-4 text-gray-700">{resumeData.personal.summary}</p>}
+        {hasContent.summary() && <p className="mb-4 text-gray-700">{resumeData.personal.summary}</p>}
 
-      {hasContent.experience() && (
-        <>
-          <h2 className="text-base font-bold mb-2">Experience</h2>
-          <div className="space-y-3 mb-4">
-            {resumeData.experience.map((exp, index) => (
-              <div key={index}>
-                {(exp.position || exp.company || exp.description) && (
-                  <>
+        {hasContent.experience() && (
+          <>
+            <h2 className="text-base font-bold mb-2">Experience</h2>
+            <div className="space-y-3 mb-4">
+              {resumeData.experience.map((exp, index) => (
+                <div key={index}>
+                  {(exp.position || exp.company || exp.description) && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="font-semibold">
+                          {exp.position || "Position"} {exp.company ? `| ${exp.company}` : ""}
+                        </span>
+                        <span className="text-gray-600 text-xs">
+                          {exp.startDate
+                            ? new Date(exp.startDate).toLocaleDateString("en-US", { year: "numeric", month: "short" })
+                            : "Start Date"}{" "}
+                          -{" "}
+                          {exp.current
+                            ? "Present"
+                            : exp.endDate
+                              ? new Date(exp.endDate).toLocaleDateString("en-US", { year: "numeric", month: "short" })
+                              : "End Date"}
+                        </span>
+                      </div>
+                      <p className="text-gray-700">{exp.description}</p>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {hasContent.education() && (
+          <>
+            <h2 className="text-base font-bold mb-2">Education</h2>
+            <div className="space-y-2 mb-4">
+              {resumeData.education.map((edu, index) => (
+                <div key={index}>
+                  {(edu.institution || edu.degree) && (
                     <div className="flex justify-between">
                       <span className="font-semibold">
-                        {exp.position || "Position"} {exp.company ? `| ${exp.company}` : ""}
+                        {edu.degree || "Degree"} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ""}{" "}
+                        {edu.institution ? `| ${edu.institution}` : ""}
                       </span>
                       <span className="text-gray-600 text-xs">
-                        {exp.startDate
-                          ? new Date(exp.startDate).toLocaleDateString("en-US", { year: "numeric", month: "short" })
-                          : "Start Date"}{" "}
-                        -{" "}
-                        {exp.current
-                          ? "Present"
-                          : exp.endDate
-                            ? new Date(exp.endDate).toLocaleDateString("en-US", { year: "numeric", month: "short" })
-                            : "End Date"}
+                        {edu.startDate ? new Date(edu.startDate).getFullYear() : ""} -{" "}
+                        {edu.endDate ? new Date(edu.endDate).getFullYear() : ""}
                       </span>
                     </div>
-                    <p className="text-gray-700">{exp.description}</p>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
-      {hasContent.education() && (
-        <>
-          <h2 className="text-base font-bold mb-2">Education</h2>
-          <div className="space-y-2 mb-4">
-            {resumeData.education.map((edu, index) => (
-              <div key={index}>
-                {(edu.institution || edu.degree) && (
-                  <div className="flex justify-between">
-                    <span className="font-semibold">
-                      {edu.degree || "Degree"} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ""}{" "}
-                      {edu.institution ? `| ${edu.institution}` : ""}
-                    </span>
-                    <span className="text-gray-600 text-xs">
-                      {edu.startDate ? new Date(edu.startDate).getFullYear() : ""} -{" "}
-                      {edu.endDate ? new Date(edu.endDate).getFullYear() : ""}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+        {hasContent.projects() && (
+          <>
+            <h2 className="text-base font-bold mb-2">Projects</h2>
+            <div className="space-y-3 mb-4">
+              {resumeData.projects.map((project, index) => (
+                <div key={index}>
+                  {(project.title || project.description) && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="font-semibold flex items-center gap-1">
+                          {project.title}
+                          {project.url && (
+                            <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-blue-600">
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
+                        </span>
+                        <span className="text-gray-600 text-xs">
+                          {project.startDate ? new Date(project.startDate).getFullYear() : ""}{" "}
+                          {project.startDate && project.endDate && "-"}{" "}
+                          {project.current ? "Present" : project.endDate ? new Date(project.endDate).getFullYear() : ""}
+                        </span>
+                      </div>
+                      <p className="text-gray-700">{project.description}</p>
+                      {project.technologies.length > 0 && (
+                        <div className="text-gray-600 text-xs">
+                          <span className="font-medium">Technologies:</span> {project.technologies.join(", ")}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
-      {hasContent.projects() && (
-        <>
-          <h2 className="text-base font-bold mb-2">Projects</h2>
-          <div className="space-y-3 mb-4">
-            {resumeData.projects.map((project, index) => (
-              <div key={index}>
-                {(project.title || project.description) && (
-                  <>
+        {hasContent.certifications() && (
+          <>
+            <h2 className="text-base font-bold mb-2">Certifications</h2>
+            <div className="space-y-2 mb-4">
+              {resumeData.certifications.map((cert, index) => (
+                <div key={index}>
+                  {(cert.name || cert.issuer) && (
                     <div className="flex justify-between">
                       <span className="font-semibold flex items-center gap-1">
-                        {project.title}
-                        {project.url && (
-                          <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-blue-600">
+                        {cert.name}
+                        {cert.url && (
+                          <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-blue-600">
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         )}
+                        {cert.issuer && <span className="font-normal"> | {cert.issuer}</span>}
                       </span>
                       <span className="text-gray-600 text-xs">
-                        {project.startDate ? new Date(project.startDate).getFullYear() : ""}{" "}
-                        {project.startDate && project.endDate && "-"}{" "}
-                        {project.current ? "Present" : project.endDate ? new Date(project.endDate).getFullYear() : ""}
+                        {cert.date ? new Date(cert.date).getFullYear() : ""}
                       </span>
                     </div>
-                    <p className="text-gray-700">{project.description}</p>
-                    {project.technologies.length > 0 && (
-                      <div className="text-gray-600 text-xs">
-                        <span className="font-medium">Technologies:</span> {project.technologies.join(", ")}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
-      {hasContent.certifications() && (
-        <>
-          <h2 className="text-base font-bold mb-2">Certifications</h2>
-          <div className="space-y-2 mb-4">
-            {resumeData.certifications.map((cert, index) => (
-              <div key={index}>
-                {(cert.name || cert.issuer) && (
-                  <div className="flex justify-between">
-                    <span className="font-semibold flex items-center gap-1">
-                      {cert.name}
-                      {cert.url && (
-                        <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-blue-600">
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      )}
-                      {cert.issuer && <span className="font-normal"> | {cert.issuer}</span>}
-                    </span>
-                    <span className="text-gray-600 text-xs">{cert.date ? new Date(cert.date).getFullYear() : ""}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+        {hasContent.awards() && (
+          <>
+            <h2 className="text-base font-bold mb-2">Honors & Awards</h2>
+            <div className="space-y-2 mb-4">
+              {resumeData.awards.map((award, index) => (
+                <div key={index}>
+                  {(award.title || award.issuer) && (
+                    <div className="flex justify-between">
+                      <span className="font-semibold">
+                        {award.title} {award.issuer && <span className="font-normal">| {award.issuer}</span>}
+                      </span>
+                      <span className="text-gray-600 text-xs">
+                        {award.date ? new Date(award.date).getFullYear() : ""}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
-      {hasContent.awards() && (
-        <>
-          <h2 className="text-base font-bold mb-2">Honors & Awards</h2>
-          <div className="space-y-2 mb-4">
-            {resumeData.awards.map((award, index) => (
-              <div key={index}>
-                {(award.title || award.issuer) && (
-                  <div className="flex justify-between">
-                    <span className="font-semibold">
-                      {award.title} {award.issuer && <span className="font-normal">| {award.issuer}</span>}
-                    </span>
-                    <span className="text-gray-600 text-xs">
-                      {award.date ? new Date(award.date).getFullYear() : ""}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+        {hasContent.skills() && (
+          <>
+            <h2 className="text-base font-bold mb-2">Skills</h2>
+            {resumeData.skills.technical.length > 0 ? (
+              <p className="text-gray-700">{resumeData.skills.technical.join(", ")}</p>
+            ) : resumeData.skills.soft.length > 0 ? (
+              <p className="text-gray-700">{resumeData.skills.soft.join(", ")}</p>
+            ) : (
+              resumeData.skills.languages.length > 0 && (
+                <p className="text-gray-700">{resumeData.skills.languages.join(", ")}</p>
+              )
+            )}
+          </>
+        )}
+      </div>
+    )
+  }
 
-      {hasContent.skills() && (
-        <>
-          <h2 className="text-base font-bold mb-2">Skills</h2>
-          {resumeData.skills.technical.length > 0 ? (
-            <p className="text-gray-700">{resumeData.skills.technical.join(", ")}</p>
-          ) : resumeData.skills.soft.length > 0 ? (
-            <p className="text-gray-700">{resumeData.skills.soft.join(", ")}</p>
-          ) : (
-            resumeData.skills.languages.length > 0 && (
-              <p className="text-gray-700">{resumeData.skills.languages.join(", ")}</p>
-            )
-          )}
-        </>
+  const renderTemplate = () => {
+    switch (template) {
+      case "professional":
+        return renderProfessionalTemplate()
+      case "modern":
+        return renderModernTemplate()
+      default:
+        return renderMinimalTemplate()
+    }
+  }
+
+  return (
+    <div className="flex flex-col">
+      {/* A4 Container with fixed dimensions */}
+      <div
+        className="relative overflow-hidden bg-white shadow-md mx-auto"
+        style={{
+          width: "794px", // A4 width in pixels at 96 DPI (210mm)
+          height: "1123px", // A4 height in pixels at 96 DPI (297mm)
+          maxWidth: "100%",
+          maxHeight: "100%",
+        }}
+      >
+        {renderTemplate()}
+
+        {/* Page number indicator */}
+        {totalPages > 1 && (
+          <div className="absolute bottom-2 right-2 bg-white/80 px-2 py-1 rounded text-xs">
+            Page {currentPage} of {totalPages}
+          </div>
+        )}
+      </div>
+
+      {/* Pagination controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-4 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={prevPage}
+            disabled={currentPage === 1}
+            className="flex items-center gap-1"
+          >
+            <ChevronLeft className="h-4 w-4" /> Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={nextPage}
+            disabled={currentPage === totalPages}
+            className="flex items-center gap-1"
+          >
+            Next <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       )}
     </div>
   )
