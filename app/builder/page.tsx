@@ -7,10 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   FileText,
-  User,
-  Briefcase,
-  GraduationCap,
-  Code,
   Save,
   Download,
   Share2,
@@ -26,6 +22,9 @@ import { ResumePreview } from "@/components/resume/resume-preview"
 import { AiAssistant } from "@/components/resume/ai-assistant"
 import { TemplateSelector } from "@/components/resume/template-selector"
 import { AtsScanner } from "@/components/resume/ats-scanner"
+import { CertificationsForm } from "@/components/resume/certifications-form"
+import { AwardsForm } from "@/components/resume/awards-form"
+import { ProjectsForm } from "@/components/resume/projects-form"
 
 export default function ResumeBuilder() {
   const [activeTab, setActiveTab] = useState("personal")
@@ -50,9 +49,11 @@ export default function ResumeBuilder() {
             <Button variant="outline" size="sm" className="gap-1">
               <Save className="h-4 w-4" /> Save
             </Button>
-            <Button size="sm" className="gap-1">
-              <Download className="h-4 w-4" /> Export
-            </Button>
+            <Link href="/export">
+              <Button size="sm" className="gap-1">
+                <Download className="h-4 w-4" /> Export
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -74,25 +75,29 @@ export default function ResumeBuilder() {
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-5 mb-6">
+                <TabsList className="grid grid-cols-8 mb-6">
                   <TabsTrigger value="personal" className="gap-2">
-                    <User className="h-4 w-4" />
                     <span className="hidden sm:inline">Personal</span>
                   </TabsTrigger>
                   <TabsTrigger value="experience" className="gap-2">
-                    <Briefcase className="h-4 w-4" />
                     <span className="hidden sm:inline">Experience</span>
                   </TabsTrigger>
                   <TabsTrigger value="education" className="gap-2">
-                    <GraduationCap className="h-4 w-4" />
                     <span className="hidden sm:inline">Education</span>
                   </TabsTrigger>
                   <TabsTrigger value="skills" className="gap-2">
-                    <Code className="h-4 w-4" />
                     <span className="hidden sm:inline">Skills</span>
                   </TabsTrigger>
+                  <TabsTrigger value="projects" className="gap-2">
+                    <span className="hidden sm:inline">Projects</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="certifications" className="gap-2">
+                    <span className="hidden sm:inline">Certs</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="awards" className="gap-2">
+                    <span className="hidden sm:inline">Awards</span>
+                  </TabsTrigger>
                   <TabsTrigger value="templates" className="gap-2">
-                    <FileText className="h-4 w-4" />
                     <span className="hidden sm:inline">Templates</span>
                   </TabsTrigger>
                 </TabsList>
@@ -111,6 +116,18 @@ export default function ResumeBuilder() {
 
                 <TabsContent value="skills">
                   <SkillsForm />
+                </TabsContent>
+
+                <TabsContent value="projects">
+                  <ProjectsForm />
+                </TabsContent>
+
+                <TabsContent value="certifications">
+                  <CertificationsForm />
+                </TabsContent>
+
+                <TabsContent value="awards">
+                  <AwardsForm />
                 </TabsContent>
 
                 <TabsContent value="templates">
@@ -146,9 +163,11 @@ export default function ResumeBuilder() {
                   <Button variant="outline" size="sm">
                     <Share2 className="h-4 w-4" />
                   </Button>
-                  <Button size="sm">
-                    <Download className="h-4 w-4" />
-                  </Button>
+                  <Link href="/export">
+                    <Button size="sm">
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
               <div className="bg-muted rounded border">

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react"
 
+// Update the ResumeData interface to include projects, certifications, and awards
 export interface ResumeData {
   personal: {
     fullName: string
@@ -38,16 +39,46 @@ export interface ResumeData {
     soft: string[]
     languages: string[]
   }
+  projects: Array<{
+    id: string
+    title: string
+    description: string
+    startDate: string
+    endDate: string
+    current: boolean
+    url: string
+    technologies: string[]
+  }>
+  certifications: Array<{
+    id: string
+    name: string
+    issuer: string
+    date: string
+    url: string
+    description: string
+  }>
+  awards: Array<{
+    id: string
+    title: string
+    issuer: string
+    date: string
+    description: string
+  }>
 }
 
+// Update the ResumeContextType to include methods for the new sections
 interface ResumeContextType {
   resumeData: ResumeData
   updatePersonalInfo: (data: Partial<ResumeData["personal"]>) => void
   updateExperience: (experiences: ResumeData["experience"]) => void
   updateEducation: (education: ResumeData["education"]) => void
   updateSkills: (category: keyof ResumeData["skills"], skills: string[]) => void
+  updateProjects: (projects: ResumeData["projects"]) => void
+  updateCertifications: (certifications: ResumeData["certifications"]) => void
+  updateAwards: (awards: ResumeData["awards"]) => void
 }
 
+// Update the initialResumeData to include the new sections
 const initialResumeData: ResumeData = {
   personal: {
     fullName: "",
@@ -88,10 +119,14 @@ const initialResumeData: ResumeData = {
     soft: [],
     languages: [],
   },
+  projects: [],
+  certifications: [],
+  awards: [],
 }
 
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined)
 
+// Update the ResumeProvider to include methods for the new sections
 export function ResumeProvider({ children }: { children: ReactNode }) {
   const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData)
 
@@ -129,6 +164,27 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     }))
   }
 
+  const updateProjects = (projects: ResumeData["projects"]) => {
+    setResumeData((prev) => ({
+      ...prev,
+      projects: projects,
+    }))
+  }
+
+  const updateCertifications = (certifications: ResumeData["certifications"]) => {
+    setResumeData((prev) => ({
+      ...prev,
+      certifications: certifications,
+    }))
+  }
+
+  const updateAwards = (awards: ResumeData["awards"]) => {
+    setResumeData((prev) => ({
+      ...prev,
+      awards: awards,
+    }))
+  }
+
   return (
     <ResumeContext.Provider
       value={{
@@ -137,6 +193,9 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
         updateExperience,
         updateEducation,
         updateSkills,
+        updateProjects,
+        updateCertifications,
+        updateAwards,
       }}
     >
       {children}
