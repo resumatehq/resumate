@@ -42,7 +42,7 @@ export default function Features() {
                     <p>Our platform combines AI technology with professional design to help you create the perfect resume.</p>
                 </div>
 
-                <div className="relative mx-auto grid max-w-4xl divide-x divide-y border *:p-12 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="relative mx-auto grid max-w-5xl divide-x divide-y border *:p-12 sm:grid-cols-2 lg:grid-cols-3">
                     {features.map((feature, index) => (
                         <div key={index} className="space-y-3">
                             <div className="flex items-center gap-2">
