@@ -1,8 +1,12 @@
 @import "tailwindcss";
-
+@import "../styles/tailwind.css";
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -122,5 +126,9 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  .custom-selection {
+    @apply selection:bg-black selection:text-hightlight dark:selection:bg-white;
   }
 }

@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+
+@theme inline {
+    --color-hightlight: #ff8800
+}
