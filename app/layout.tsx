@@ -2,7 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
-import "./globals.css";
+import "../styles/globals.css";
 import { ResumeProvider } from "@/context/resume-context";
 import { Providers } from "@/providers";
 
@@ -28,6 +28,10 @@ const myFont = localFont({
       path: "./fonts/PingFangSC-Semibold.woff2",
       weight: "600",
     },
+    {
+      path: "./fonts/PingFangSC-Bold.woff2",
+      weight: "700",
+    },
   ],
   display: "swap",
   variable: "--font-PingFangSC",
@@ -45,7 +49,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
-      <body className={`${myFont.className} ${myFont.variable}`}>
+      <body className={`${myFont.className} ${myFont.variable} font-PingFangSC custom-selection`}>
         <Providers>
           <ResumeProvider>{children}</ResumeProvider>
         </Providers>
