@@ -49,11 +49,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
-      <body className={`${myFont.className} ${myFont.variable} font-PingFangSC custom-selection`}>
+      <body
+        className={`${myFont.className} ${myFont.variable} font-PingFangSC custom-selection`}
+      >
         <Providers>
-          <ResumeProvider>
-            <main className="w-full">{children}</main>
-          </ResumeProvider>
+          <main className="w-full">{children}</main>
         </Providers>
       </body>
     </html>
