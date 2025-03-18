@@ -1,41 +1,49 @@
-"use client"
-import Link from "next/link"
-import { Menu, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import React from "react"
-import { cn } from "@/lib/utils"
-import Logo from "@/components/logo"
+"use client";
+import Link from "next/link";
+import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import React from "react";
+import { cn } from "@/lib/utils";
+import Logo from "@/components/logo";
 
 const menuItems = [
   { name: "Features", href: "#link" },
   { name: "Templates", href: "#link" },
   { name: "Pricing", href: "#link" },
   { name: "About", href: "#link" },
-]
+];
 
 export const HomeHeader = () => {
-  const [menuState, setMenuState] = React.useState(false)
-  const [isScrolled, setIsScrolled] = React.useState(false)
+  const [menuState, setMenuState] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
 
   React.useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   return (
     <header>
-      <nav data-state={menuState && "active"} className="fixed z-20 w-full px-2">
+      <nav
+        data-state={menuState && "active"}
+        className="fixed z-20 w-full px-2"
+      >
         <div
           className={cn(
             "mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12",
-            isScrolled && "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5",
+            isScrolled &&
+              "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5"
           )}
         >
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
             <div className="flex w-full justify-between lg:w-auto">
-              <Link href="/" aria-label="home" className="flex items-center space-x-2">
+              <Link
+                href="/"
+                aria-label="home"
+                className="flex items-center space-x-2"
+              >
                 <Logo />
               </Link>
 
@@ -80,17 +88,30 @@ export const HomeHeader = () => {
                 </ul>
               </div>
               <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                <Button asChild variant="outline" size="sm" className={cn(isScrolled && "lg:hidden")}>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className={cn(isScrolled && "lg:hidden")}
+                >
                   <Link href="/auth/login">
                     <span>Login</span>
                   </Link>
                 </Button>
-                <Button asChild size="sm" className={cn(isScrolled && "lg:hidden")}>
+                <Button
+                  asChild
+                  size="sm"
+                  className={cn(isScrolled && "lg:hidden")}
+                >
                   <Link href="/auth/sign-up">
                     <span>Sign Up</span>
                   </Link>
                 </Button>
-                <Button asChild size="sm" className={cn(isScrolled ? "lg:inline-flex" : "hidden")}>
+                <Button
+                  asChild
+                  size="sm"
+                  className={cn(isScrolled ? "lg:inline-flex" : "hidden")}
+                >
                   <Link href="#">
                     <span>Get Strated</span>
                   </Link>
@@ -101,6 +122,5 @@ export const HomeHeader = () => {
         </div>
       </nav>
     </header>
-  )
-}
-
+  );
+};
