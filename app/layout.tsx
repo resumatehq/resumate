@@ -51,7 +51,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <body className={`${myFont.className} ${myFont.variable} font-PingFangSC custom-selection`}>
         <Providers>
-          <ResumeProvider>{children}</ResumeProvider>
+          <ResumeProvider>
+            <main className="w-full">{children}</main>
+          </ResumeProvider>
         </Providers>
       </body>
     </html>
