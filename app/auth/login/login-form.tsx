@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { IconFidgetSpinner } from '@tabler/icons-react';
 import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, UseFormSetError } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -13,17 +13,24 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { LoginBody, LoginBodyType } from '@/schemas/auth.schema';
+import { useLoginMutation } from '@/queries/useAuth';
+import { toast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/context/auth-context';
-import { useToast } from '@/components/ui/use-toast';
-import authApiRequest from '@/apiRequest/auth.api';
+import { UserContext } from '@/context/profileContext';
+import { useGetMeMutation } from '@/queries/useAccount';
+import { handleErrorApi } from '@/lib/utils';
 
-export default function LoginForm() {
+interface SignInFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export default function LoginForm({ className, ...props }: SignInFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { setUser, isAuthenticated } = useAuthContext();
-  const { toast } = useToast();
+  const loginMutation = useLoginMutation();
+  const me = useGetMeMutation();
+
+  const { setUser } = useContext(UserContext) || {};
+
   const router = useRouter();
 
   const form = useForm<LoginBodyType>({
@@ -34,33 +41,38 @@ export default function LoginForm() {
     },
   });
 
-  async function onSubmit(values: LoginBodyType) {
-    if (isLoading) return;
+  const onSubmit = async (data: LoginBodyType) => {
+    if (loginMutation.isPending) return;
     setIsLoading(true);
     try {
-      const result = await authApiRequest.login(values);
+      console.log(data);
+      const res = await loginMutation.mutateAsync(data);
+      console.log('dang nhap thanh cong', res.payload.data);
+
+      const response = await me.mutateAsync();
+
+      console.log('dang nhap thanh cong', response.payload.data);
+
       toast({
-        description: result?.payload.message,
+        description: res.payload.message,
       });
-      //không nhận được account trả về
-      // setUser(result?.payload.data.user);
-      console.log('result', result);
-      // if (isAuthenticated) {    //chưa setUser
-      //   router.push('/');
-      //   router.refresh();
-      // }
+      setUser?.(response.payload.data);
+      router.push('/');
     } catch (error: any) {
-      console.log('error', error);
+      toast({
+        title: 'Error',
+        description: error?.payload?.message ?? 'Error unknown',
+        variant: 'destructive',
+      });
+      handleErrorApi({
+        error,
+        setError: form.setError,
+      });
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/');
-    }
-  }, [router]);
   return (
     <div className="bg-card m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)]">
       <div className="p-8 pb-6">
@@ -148,7 +160,7 @@ export default function LoginForm() {
             <FormField
               control={form.control}
               name="email"
-              render={({ field }) => (
+              render={({ field, formState: { errors } }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
@@ -158,7 +170,7 @@ export default function LoginForm() {
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage>{Boolean(errors.password?.message)}</FormMessage>
                 </FormItem>
               )}
             />
@@ -166,7 +178,7 @@ export default function LoginForm() {
             <FormField
               control={form.control}
               name="password"
-              render={({ field }) => (
+              render={({ field, formState: { errors } }) => (
                 <FormItem>
                   <div className="flex items-center justify-between">
                     <FormLabel>Password</FormLabel>
@@ -180,7 +192,7 @@ export default function LoginForm() {
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage>{Boolean(errors.password?.message)}</FormMessage>
                 </FormItem>
               )}
             />

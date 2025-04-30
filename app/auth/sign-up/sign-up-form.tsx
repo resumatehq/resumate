@@ -15,9 +15,15 @@ import {
 } from '@/components/ui/form';
 import { useState } from 'react';
 import { SignUpBody, SignUpBodyType } from '@/schemas/auth.schema';
+import { useSignUpMutation } from '@/queries/useAuth';
+import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { handleErrorApi } from '@/lib/utils';
 
 export default function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const signUpMutation = useSignUpMutation();
+  const router = useRouter();
 
   const form = useForm<SignUpBodyType>({
     resolver: zodResolver(SignUpBody),
@@ -33,8 +39,18 @@ export default function SignUpForm() {
   async function onSubmit(data: SignUpBodyType) {
     setIsLoading(true);
     try {
+      const res = await signUpMutation.mutateAsync(data);
+      console.log('dang ky thanh cong', res.payload.data);
+
+      toast({
+        description: res.payload.message,
+      });
+      // router.push('/auth/login');
+      router.push('/');
     } catch (error) {
-      console.error(error);
+      // console.error(error);
+      console.log('error', error);
+      handleErrorApi({ error, setError: form.setError });
     } finally {
       setIsLoading(false);
     }

@@ -1,7 +1,14 @@
-import envConfig from '@/config/env';
-import { normalizePath } from '@/lib/utils';
+import envConfig from '@/config';
+import {
+  getAccessTokenFromLocalStorage,
+  normalizePath,
+  removeTokensFromLocalStorage,
+  setAccessTokenToLocalStorage,
+  setRefreshTokenToLocalStorage,
+} from '@/lib/utils';
 import { LoginResType } from '@/schemas/auth.schema';
-import { redirect } from 'next/navigation';
+import { ErrorPayload } from '@/types/error.type';
+import Cookies from 'js-cookie';
 
 type CustomOptions = Omit<RequestInit, 'method'> & {
   baseUrl?: string | undefined;
@@ -17,70 +24,86 @@ type EntityErrorPayload = {
 
 export class HttpError extends Error {
   status: number;
-  payload: {
-    message: string;
-    [key: string]: any;
-  };
-  constructor({ status, payload }: { status: number; payload: any }) {
-    super('Http Error');
+  payload: ErrorPayload;
+  constructor({
+    status,
+    payload,
+    message = 'Lỗi HTTP',
+  }: {
+    status: number;
+    payload: any;
+    message?: string;
+  }) {
+    super(message);
     this.status = status;
     this.payload = payload;
   }
 }
 
 export class EntityError extends HttpError {
-  status: 422;
+  status: typeof ENTITY_ERROR_STATUS;
   payload: EntityErrorPayload;
   constructor({
     status,
     payload,
   }: {
-    status: 422;
-    payload: EntityErrorPayload;
+    status: typeof ENTITY_ERROR_STATUS;
+    payload: any;
   }) {
-    super({ status, payload });
+    super({ status, payload, message: payload.message || 'Lỗi thực thể' });
     this.status = status;
-    this.payload = payload;
+    this.payload = {
+      message: payload.message || 'Lỗi thực thể',
+      errors: payload.errors || {},
+    };
   }
 }
 
 let clientLogoutRequest: null | Promise<any> = null;
-export const isClient = () => typeof window !== 'undefined';
+
+const isClient = typeof window !== 'undefined';
+
 const request = async <Response>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   url: string,
-  options?: CustomOptions
+  options?: CustomOptions | undefined
 ) => {
   let body: FormData | string | undefined = undefined;
-
   if (options?.body instanceof FormData) {
     body = options.body;
   } else if (options?.body) {
     body = JSON.stringify(options.body);
   }
-
-  const baseHeaders: Record<string, string> =
+  const baseHeaders: {
+    [key: string]: string;
+  } =
     body instanceof FormData
       ? {}
       : {
           'Content-Type': 'application/json',
         };
 
-  if (isClient()) {
-    const sessionToken = localStorage.getItem('sessionToken');
-    if (sessionToken) {
-      baseHeaders.Authorization = `Bearer ${sessionToken}`;
+  // Xử lý access_token từ localStorage hoặc từ cookie (server-side)
+  if (isClient) {
+    const access_token = getAccessTokenFromLocalStorage();
+    if (access_token) {
+      baseHeaders.Authorization = `Bearer ${access_token}`;
+    }
+  } else {
+    const access_token = Cookies.get('access_token')?.valueOf;
+    if (access_token) {
+      baseHeaders.Authorization = `Bearer ${access_token}`;
     }
   }
+  // Nếu không truyền baseUrl (hoặc baseUrl = undefined) thì lấy từ envConfig.NEXT_PUBLIC_API_ENDPOINT
+  // Nếu truyền baseUrl thì lấy giá trị truyền vào, truyền vào '' thì đồng nghĩa với việc chúng ta gọi API đến Next.js Server
 
   const baseUrl =
     options?.baseUrl === undefined
       ? envConfig.NEXT_PUBLIC_API_ENDPOINT
       : options.baseUrl;
 
-  const fullUrl = url.startsWith('/')
-    ? `${baseUrl}${url}`
-    : `${baseUrl}/${url}`;
+  const fullUrl = `${baseUrl}/${normalizePath(url)}`;
 
   const res = await fetch(fullUrl, {
     ...options,
@@ -92,70 +115,93 @@ const request = async <Response>(
     method,
   });
 
-  const payload = await res.json();
+  const payload: Response = await res.json();
+  const data = {
+    status: res.status,
+    payload,
+  };
 
-  // Nếu lỗi, xử lý và ném lỗi phù hợp
+  // Interceptor là nời chúng ta xử lý request và response [các trường hợp lỗi từ phía server (Entity và Authentication)] trước khi trả về cho phía component
   if (!res.ok) {
     if (res.status === ENTITY_ERROR_STATUS) {
-      // 422 - Validation Error
-      const error = new EntityError({
-        status: 422,
-        payload,
+      throw new EntityError({
+        status: ENTITY_ERROR_STATUS,
+        payload: data.payload,
       });
-      console.error('Validation Error:', error.payload.errors);
-      throw error;
-    }
-
-    if (res.status === AUTHENTICATION_ERROR_STATUS) {
-      // 401 - Unauthorized
-      if (isClient()) {
+    } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
+      // Xử lý đăng xuất và điều hướng khi bị lỗi xác thực
+      if (isClient) {
+        const locale = Cookies.get('NEXT_LOCALE');
         if (!clientLogoutRequest) {
-          clientLogoutRequest = fetch('/api/auth/logout', {
+          // Đảm bảo rằng chỉ có 1 request logout được gửi đi
+          clientLogoutRequest = fetch('/api/v1/user/logout', {
             method: 'POST',
-            body: JSON.stringify({ force: true }),
-            headers: { ...baseHeaders },
+            body: null, // Logout mình sẽ cho phép luôn luôn thành công
+            headers: {
+              ...baseHeaders,
+            } as any,
           });
-
           try {
             await clientLogoutRequest;
           } catch (error) {
-            console.error('Logout error:', error);
+            console.error('Error during logout:', error);
           } finally {
-            localStorage.removeItem('sessionToken');
+            removeTokensFromLocalStorage();
             clientLogoutRequest = null;
-            location.href = '/login';
+            // Redirect về trang login có thể dẫn đến loop vô hạn
+            // Nếu không không được xử lý đúng cách
+            // Vì nếu rơi vào trường hợp tại trang Login, chúng ta có gọi các API cần access token
+            // Mà access token đã bị xóa thì nó lại nhảy vào đây, và cứ thế nó sẽ bị lặp
+            location.href = `/${locale}/login`;
           }
         }
       } else {
-        const sessionToken = (options?.headers as any)?.Authorization?.split(
-          'Bearer '
-        )[1];
-        redirect(`/logout?sessionToken=${sessionToken}`);
+        // Đây là trường hợp khi mà chúng ta vẫn còn access token (còn hạn)
+        // Và chúng ta gọi API ở Next.js Server (Route Handler , Server Component) đến Server Backend
+        // const access_token = (options?.headers as any)?.Authorization.split('Bearer ')[1]
+        // redirect(`/login?accessToken=${access_token}`)
+        Cookies.set('access_token', '', { path: '/', expires: new Date(0) });
+        Cookies.set('refresh_token', '', { path: '/', expires: new Date(0) });
+        if (isClient) {
+          window.location.href = '/login';
+        }
       }
-      return;
-    }
-
-    // Các lỗi khác
-    const error = new HttpError({ status: res.status, payload });
-    console.error('HTTP Error:', error.payload.message);
-    throw error;
-  }
-
-  // Lưu token khi đăng nhập hoặc đăng ký
-  if (isClient()) {
-    const normalizedPath = normalizePath(url);
-    if (['auth/login', 'auth/register'].includes(normalizedPath)) {
-      const { access_token } = (payload as LoginResType).data;
-      localStorage.setItem('sessionToken', access_token);
-    } else if ('auth/logout' === normalizedPath) {
-      localStorage.removeItem('sessionToken');
+    } else {
+      throw new HttpError(data);
     }
   }
 
-  return {
-    status: res.status,
-    payload: payload as Response,
-  };
+  // Lưu lại token sau khi đăng nhập hoặc làm mới token
+  if (isClient) {
+    const normalizeUrl = normalizePath(url);
+    // Xử lý khi đăng nhập
+    if ('auth/login' === normalizeUrl) {
+      const { access_token, refresh_token } = (payload as LoginResType).data;
+      setAccessTokenToLocalStorage(access_token);
+      setRefreshTokenToLocalStorage(refresh_token);
+    }
+    // Xử lý khi làm mới token (làm mới access_token và refresh_token)
+    else if ('api/auth/refresh-token' === normalizeUrl) {
+      const { access_token, refresh_token } = payload as {
+        access_token: string;
+        refresh_token: string;
+      };
+      setAccessTokenToLocalStorage(access_token);
+      setRefreshTokenToLocalStorage(refresh_token);
+    } else if ('api/auth/token' === normalizeUrl) {
+      const { access_token, refresh_token } = payload as {
+        access_token: string;
+        refresh_token: string;
+      };
+      setAccessTokenToLocalStorage(access_token);
+      setRefreshTokenToLocalStorage(refresh_token);
+    }
+    // Xử lý khi đăng xuất
+    else if ('api/auth/logout' === normalizeUrl) {
+      removeTokensFromLocalStorage();
+    }
+  }
+  return data;
 };
 
 const http = {

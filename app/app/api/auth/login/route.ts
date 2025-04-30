@@ -7,9 +7,9 @@ export async function POST(request: Request) {
   const body = (await request.json()) as LoginBodyType;
   const cookieStore = cookies();
   try {
-    const response = await authApiRequest.login(body);
-    if (!response || !response.payload) {
-      throw new Error('Invalid response from login API');
+    const response = await authApiRequest.sLogin(body);
+    if (!response) {
+      throw new Error('Login response is undefined');
     }
     const { payload } = response;
     const { access_token, refresh_token } = payload.data;

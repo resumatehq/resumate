@@ -1,7 +1,9 @@
+'use client';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { ThemeProvider } from './theme-provider';
 import { ResumeProvider } from '@/context/resume-context';
-import { AuthProvider } from '@/context/auth-context';
+import { UserProvider } from '@/context/profileContext';
+import AppProvider from '@/components/app-provider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -11,11 +13,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
       enableSystem
       disableTransitionOnChange
     >
-      <AuthProvider>
-        <SidebarProvider>
-          <ResumeProvider>{children}</ResumeProvider>
-        </SidebarProvider>
-      </AuthProvider>
+      <AppProvider>
+        <UserProvider>
+          <SidebarProvider>
+            <ResumeProvider>{children}</ResumeProvider>
+          </SidebarProvider>
+        </UserProvider>
+      </AppProvider>
     </ThemeProvider>
   );
 }

@@ -1,3 +1,4 @@
+// Định nghĩa kiểu lỗi cho API response
 export interface ErrorPayload {
   message: string;
   errors: {
