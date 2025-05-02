@@ -1,10 +1,11 @@
-import ResumeDashboard from './resumes';
+import CoverLetters from './cover-letters';
 import DocumentsTabs from '../tabs';
-export default function ResumePage() {
+
+export default function CoverLettersPage() {
   return (
     <section className="container mx-auto px-4 max-w-6xl">
       <DocumentsTabs />
-      {/* <ResumeDashboard /> */}
+      {/* <CoverLetters /> */}
     </section>
   );
 }
