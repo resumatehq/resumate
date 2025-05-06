@@ -9,7 +9,7 @@ export default tseslint.config(
   {
     plugins: {
       '@typescript-eslint': tseslint.plugin,
-      'prettier': prettierPlugin
+      prettier: prettierPlugin,
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
@@ -25,17 +25,17 @@ export default tseslint.config(
           useTabs: false,
           singleQuote: true,
           printWidth: 120,
-          jsxSingleQuote: true
-        }
-      ]
+          jsxSingleQuote: true,
+        },
+      ],
     },
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: 'latest',
-        sourceType: 'module'
-      }
-    }
+        sourceType: 'module',
+      },
+    },
   },
   eslintConfigPrettier
 );
