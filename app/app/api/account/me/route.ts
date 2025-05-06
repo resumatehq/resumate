@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import accountApiRequest from '@/apiRequest/account.api';
 
-export async function GET(request: Request) {
+export async function GET() {
   const cookieStore = cookies();
   const access_token = (await cookieStore).get('access_token')?.value;
 
