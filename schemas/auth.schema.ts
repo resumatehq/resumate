@@ -1,4 +1,5 @@
 import { AUTH_ERROR_MESSAGE } from '@/constants/error-validation-message';
+import { AccountSchema } from './account.schema';
 import z from 'zod';
 
 export const LoginBody = z
@@ -23,6 +24,7 @@ export const LoginRes = z.object({
   data: z.object({
     access_token: z.string(),
     refresh_token: z.string(),
+    user: AccountSchema,
   }),
 });
 

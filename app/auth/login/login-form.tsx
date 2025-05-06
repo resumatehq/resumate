@@ -49,15 +49,16 @@ export default function LoginForm({ className, ...props }: SignInFormProps) {
       const res = await loginMutation.mutateAsync(data);
       console.log('dang nhap thanh cong', res.payload.data);
 
-      const response = await me.mutateAsync();
+      // const response = await me.mutateAsync();
 
-      console.log('dang nhap thanh cong', response.payload.data);
+      // console.log('dang nhap thanh cong', response.payload.data);
 
       toast({
         description: res.payload.message,
       });
-      setUser?.(response.payload.data);
-      router.push('/');
+      setUser?.(res.payload.data.user);
+      // console.log('user', response.payload.data);
+      router.push('/app');
     } catch (error: any) {
       toast({
         title: 'Error',
