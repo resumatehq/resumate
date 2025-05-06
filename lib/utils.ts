@@ -2,7 +2,8 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { UseFormSetError } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
-import CryptoJS from 'crypto-js';
+import AES from 'crypto-js/aes';
+import Utf8 from 'crypto-js/enc-utf8';
 import envConfig from '@/config';
 import { jwtDecode } from 'jwt-decode';
 import { TokenPayload } from '@/types/jwt.type';
@@ -53,16 +54,16 @@ export const normalizePath = (path: string) => {
 };
 
 export const encryptData = (data: string): string => {
-  return CryptoJS.AES.encrypt(data, `${envConfig?.SECRET_KEY}`).toString();
+  return AES.encrypt(data, `${envConfig?.NEXT_PUBLIC_SECRET_KEY}`).toString();
 };
 
 export const decryptData = (encryptedData: string): string => {
   try {
-    const bytes = CryptoJS.AES.decrypt(
+    const bytes = AES.decrypt(
       encryptedData,
-      `${envConfig?.SECRET_KEY}`
+      `${envConfig?.NEXT_PUBLIC_SECRET_KEY}`
     );
-    return bytes.toString(CryptoJS.enc.Utf8);
+    return bytes.toString(Utf8);
   } catch (error) {
     console.error('Lỗi khi giải mã:', error);
     return '';
