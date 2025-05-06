@@ -1,15 +1,15 @@
 import authApiRequest from '@/apiRequest/auth.api';
-import { RegisterBodyType } from '@/schemas/auth.schema';
+import { SignUpBodyType } from '@/schemas/auth.schema';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { HttpError } from '@/lib/http';
 export async function POST(request: Request) {
-  const body = (await request.json()) as RegisterBodyType;
+  const body = (await request.json()) as SignUpBodyType;
   const cookieStore = cookies();
   try {
-    const response = await authApiRequest.sRegister(body);
+    const response = await authApiRequest.sSignup(body);
     if (!response || !response.payload) {
-      throw new Error('Invalid response from sRegister');
+      throw new Error('Invalid response from sSignUp');
     }
     const { payload } = response;
     const { access_token, refresh_token } = payload.data;
