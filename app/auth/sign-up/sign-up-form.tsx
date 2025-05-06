@@ -1,10 +1,10 @@
-import Logo from "@/components/logo";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { IconFidgetSpinner } from "@tabler/icons-react";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import Logo from '@/components/logo';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { IconFidgetSpinner } from '@tabler/icons-react';
+import Link from 'next/link';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -12,30 +12,45 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { useState } from "react";
-import { SignUpBody, SignUpBodyType } from "@/schemas/auth.schema";
+} from '@/components/ui/form';
+import { useState } from 'react';
+import { SignUpBody, SignUpBodyType } from '@/schemas/auth.schema';
+import { useSignUpMutation } from '@/queries/useAuth';
+import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { handleErrorApi } from '@/lib/utils';
 
 export default function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const signUpMutation = useSignUpMutation();
+  const router = useRouter();
 
   const form = useForm<SignUpBodyType>({
     resolver: zodResolver(SignUpBody),
     defaultValues: {
-      email: "",
-      name: "",
-      password: "",
+      email: '',
+      username: '',
+      password: '',
+      confirm_password: '',
+      date_of_birth: '',
     },
   });
 
   async function onSubmit(data: SignUpBodyType) {
     setIsLoading(true);
     try {
-      // Handle login logic here
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await signUpMutation.mutateAsync(data);
+      console.log('dang ky thanh cong', res.payload.data);
+
+      toast({
+        description: res.payload.message,
+      });
+      // router.push('/auth/login');
+      router.push('/');
     } catch (error) {
-      console.error(error);
+      // console.error(error);
+      console.log('error', error);
+      handleErrorApi({ error, setError: form.setError });
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +104,7 @@ export default function SignUpForm() {
                   d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0C79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
                 ></path>
               </svg>
-            )}{" "}
+            )}{' '}
             Google
           </Button>
           <Button
@@ -118,7 +133,7 @@ export default function SignUpForm() {
                   d="M256 256.002H134.335V134.336H256z"
                 ></path>
               </svg>
-            )}{" "}
+            )}{' '}
             Microsoft
           </Button>
         </div>
@@ -146,16 +161,12 @@ export default function SignUpForm() {
             />
             <FormField
               control={form.control}
-              name="name"
+              name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>User Name</FormLabel>
                   <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="John Doe"
-                      {...field}
-                    />
+                    <Input type="text" placeholder="John Doe" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -167,9 +178,35 @@ export default function SignUpForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Password</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirm_password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="date_of_birth"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date of Birth</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,69 +1,121 @@
-import { AUTH_ERROR_MESSAGE } from '@/constants/error-validation-message'
-import z from 'zod'
+import { AUTH_ERROR_MESSAGE } from '@/constants/error-validation-message';
+import { AccountSchema } from './account.schema';
+import z from 'zod';
 
 export const LoginBody = z
   .object({
-    email: z.string().min(1, { message: AUTH_ERROR_MESSAGE.EMAIL_REQUIRED }).email({
-      message: AUTH_ERROR_MESSAGE.EMAIL_INVALID
-    }),
+    email: z
+      .string()
+      .min(1, { message: AUTH_ERROR_MESSAGE.EMAIL_REQUIRED })
+      .email({
+        message: AUTH_ERROR_MESSAGE.EMAIL_INVALID,
+      }),
     password: z
       .string()
       .min(6, { message: AUTH_ERROR_MESSAGE.PASSWORD_MIN })
-      .max(100, { message: AUTH_ERROR_MESSAGE.PASSWORD_MAX })
+      .max(100, { message: AUTH_ERROR_MESSAGE.PASSWORD_MAX }),
   })
-  .strict()
+  .strict();
 
-export type LoginBodyType = z.infer<typeof LoginBody>
+export type LoginBodyType = z.infer<typeof LoginBody>;
 
 export const LoginRes = z.object({
   message: z.string(),
   data: z.object({
     access_token: z.string(),
-    refresh_token: z.string()
-  })
-})
+    refresh_token: z.string(),
+    user: AccountSchema,
+  }),
+});
 
-export type LoginResType = z.TypeOf<typeof LoginRes>
+export type LoginResType = z.TypeOf<typeof LoginRes>;
 
 export const SignUpBody = z
   .object({
-    name: z.string().min(1, { message: AUTH_ERROR_MESSAGE.NAME_REQUIRED }),
+    username: z.string().min(1, { message: AUTH_ERROR_MESSAGE.NAME_REQUIRED }),
     email: z.string().email({ message: AUTH_ERROR_MESSAGE.EMAIL_INVALID }),
     password: z.string().min(6, { message: AUTH_ERROR_MESSAGE.PASSWORD_MIN }),
+    confirm_password: z
+      .string()
+      .min(1, { message: AUTH_ERROR_MESSAGE.CONFIRM_PASSWORD_REQUIRED }),
+    date_of_birth: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, {
+        message: AUTH_ERROR_MESSAGE.DATE_OF_BIRTH_INVALID,
+      })
+      .transform((val) => new Date(val).toISOString().split('T')[0]),
   })
-export type SignUpBodyType = z.infer<typeof SignUpBody>
+  .refine((data) => data.password === data.confirm_password, {
+    message: AUTH_ERROR_MESSAGE.CONFIRM_PASSWORD_NOT_MATCH,
+    path: ['confirm_password'],
+  });
+
+export type SignUpBodyType = z.infer<typeof SignUpBody>;
 
 export const SignUpRes = z.object({
   message: z.string(),
   data: z.object({
     access_token: z.string(),
-    refresh_token: z.string()
-  })
-})
-
-export type SignUpResType = z.TypeOf<typeof SignUpRes>
-
-// Forgot password schemas
-export const ForgotPasswordEmailBody = z.object({
-  email: z.string().min(1, { message: AUTH_ERROR_MESSAGE.EMAIL_REQUIRED }).email({
-    message: AUTH_ERROR_MESSAGE.EMAIL_INVALID
+    refresh_token: z.string(),
   }),
 });
-export type ForgotPasswordEmailBodyType = z.infer<typeof ForgotPasswordEmailBody>;
 
-export const ForgotPasswordOtpBody = z.object({
-  otp: z.string().min(8, { message: AUTH_ERROR_MESSAGE.OTP_MIN }),
-});
-export type ForgotPasswordOtpBodyType = z.infer<typeof ForgotPasswordOtpBody>;
+export type SignUpResType = z.TypeOf<typeof SignUpRes>;
 
-export const ForgotPasswordResetBody = z.object({
-  password: z.string()
-    .min(6, { message: AUTH_ERROR_MESSAGE.PASSWORD_MIN })
-    .max(100, { message: AUTH_ERROR_MESSAGE.PASSWORD_MAX }),
-  confirmPassword: z.string()
-    .min(6, { message: AUTH_ERROR_MESSAGE.PASSWORD_MIN })
-}).refine((data) => data.password === data.confirmPassword, {
-  message: AUTH_ERROR_MESSAGE.PASSWORD_MATCH,
-  path: ["confirmPassword"],
+export const RefreshTokenBody = z
+  .object({
+    refresh_token: z.string(),
+  })
+  .strict();
+
+export type RefreshTokenBodyType = z.TypeOf<typeof RefreshTokenBody>;
+
+export const RefreshTokenRes = z.object({
+  data: z.object({
+    access_token: z.string(),
+    refresh_token: z.string(),
+  }),
+  message: z.string(),
 });
-export type ForgotPasswordResetBodyType = z.infer<typeof ForgotPasswordResetBody>;
+
+export type RefreshTokenResType = z.TypeOf<typeof RefreshTokenRes>;
+
+export const LogoutBody = z
+  .object({
+    refresh_token: z.string(),
+  })
+  .strict();
+
+export type LogoutBodyType = z.TypeOf<typeof LogoutBody>;
+
+export const UpdateProfileBody = z.object({
+  name: z.string().min(1, { message: AUTH_ERROR_MESSAGE.NAME_REQUIRED }),
+  email: z.string().email({ message: AUTH_ERROR_MESSAGE.EMAIL_INVALID }),
+  date_of_birth: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: AUTH_ERROR_MESSAGE.DATE_OF_BIRTH_INVALID,
+    })
+    .transform((val) => new Date(val).toISOString().split('T')[0]),
+});
+
+export type UpdateProfileBodyType = z.infer<typeof UpdateProfileBody>;
+
+export const ChangePasswordBody = z
+  .object({
+    current_password: z
+      .string()
+      .min(6, { message: AUTH_ERROR_MESSAGE.PASSWORD_MIN }),
+    new_password: z
+      .string()
+      .min(6, { message: AUTH_ERROR_MESSAGE.PASSWORD_MIN }),
+    confirm_new_password: z
+      .string()
+      .min(1, { message: AUTH_ERROR_MESSAGE.CONFIRM_PASSWORD_REQUIRED }),
+  })
+  .refine((data) => data.new_password === data.confirm_new_password, {
+    message: AUTH_ERROR_MESSAGE.CONFIRM_PASSWORD_NOT_MATCH,
+    path: ['confirm_new_password'],
+  });
+
+export type ChangePasswordBodyType = z.infer<typeof ChangePasswordBody>;
