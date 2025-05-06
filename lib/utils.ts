@@ -54,12 +54,15 @@ export const normalizePath = (path: string) => {
 };
 
 export const encryptData = (data: string): string => {
-  return AES.encrypt(data, `${envConfig?.SECRET_KEY}`).toString();
+  return AES.encrypt(data, `${envConfig?.NEXT_PUBLIC_SECRET_KEY}`).toString();
 };
 
 export const decryptData = (encryptedData: string): string => {
   try {
-    const bytes = AES.decrypt(encryptedData, `${envConfig?.SECRET_KEY}`);
+    const bytes = AES.decrypt(
+      encryptedData,
+      `${envConfig?.NEXT_PUBLIC_SECRET_KEY}`
+    );
     return bytes.toString(Utf8);
   } catch (error) {
     console.error('Lỗi khi giải mã:', error);
