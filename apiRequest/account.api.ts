@@ -4,8 +4,8 @@ import { AccountResType } from '@/schemas/account.schema';
 
 const accountApiRequest = {
   me: () =>
-    http.get<AccountResType>('users/profile', {
-      baseUrl: envConfig.NEXT_PUBLIC_API_ENDPOINT,
+    http.get<AccountResType>('api/account/me', {
+      baseUrl: '',
     }),
 
   sMe: (access_token: string) =>
