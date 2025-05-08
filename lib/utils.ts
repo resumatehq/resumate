@@ -229,3 +229,12 @@ export const decryptData = (encryptedData: string): string => {
     return '';
   }
 };
+
+export const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
