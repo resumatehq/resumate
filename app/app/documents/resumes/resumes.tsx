@@ -126,9 +126,8 @@ function ResumeCard({
   resume: ResumeType;
   onDelete: (id: string) => void;
 }) {
-  const { _id, title, targetPosition, industry, metadata } = resume;
-  const updatedAt = new Date(metadata.updatedAt);
-  const formattedDate = updatedAt.toLocaleDateString("en-US", {
+  const { _id, title, targetPosition, industry, updatedAt } = resume;
+  const formattedDate = new Date(updatedAt).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -195,7 +194,7 @@ function ResumeCard({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-red-500 cursor-pointer"
-                  onClick={() => onDelete(_id)}
+                  onClick={() => onDelete(_id as string)}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   <span>Delete</span>

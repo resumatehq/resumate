@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import NewResume from "./newResume";
+import { useGetResumesQuery } from "@/queries/useResume";
 
 // Interface phù hợp với cấu trúc API trả về
 interface ResumeItem {
@@ -28,7 +29,7 @@ interface ResumeItem {
 }
 
 export default function ResumeList() {
-  const { data: apiResponse, isLoading } = useGetResumes();
+  const { data: apiResponse, isLoading } = useGetResumesQuery();
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
 
   // Debug log toàn bộ apiResponse
