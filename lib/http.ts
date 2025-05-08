@@ -1,10 +1,10 @@
 import envConfig from '@/config';
 import {
-  getAccessTokenFromLocalStorage,
+  getAccessToken,
   normalizePath,
-  removeTokensFromLocalStorage,
-  setAccessTokenToLocalStorage,
-  setRefreshTokenToLocalStorage,
+  removeTokens,
+  setAccessToken,
+  setRefreshToken,
 } from '@/lib/utils';
 import { LoginResType } from '@/schemas/auth.schema';
 import { ErrorPayload } from '@/types/error.type';
@@ -85,7 +85,7 @@ const request = async <Response>(
 
   // Xử lý access_token từ localStorage hoặc từ cookie (server-side)
   if (isClient) {
-    const access_token = getAccessTokenFromLocalStorage();
+    const access_token = getAccessToken();
     if (access_token) {
       baseHeaders.Authorization = `Bearer ${access_token}`;
     }
@@ -131,10 +131,10 @@ const request = async <Response>(
     } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
       // Xử lý đăng xuất và điều hướng khi bị lỗi xác thực
       if (isClient) {
-        const locale = Cookies.get('NEXT_LOCALE');
+        // const locale = Cookies.get('NEXT_LOCALE');
         if (!clientLogoutRequest) {
           // Đảm bảo rằng chỉ có 1 request logout được gửi đi
-          clientLogoutRequest = fetch('/api/v1/user/logout', {
+          clientLogoutRequest = fetch('auth/logout', {
             method: 'POST',
             body: null, // Logout mình sẽ cho phép luôn luôn thành công
             headers: {
@@ -146,13 +146,13 @@ const request = async <Response>(
           } catch (error) {
             console.error('Error during logout:', error);
           } finally {
-            removeTokensFromLocalStorage();
+            removeTokens();
             clientLogoutRequest = null;
             // Redirect về trang login có thể dẫn đến loop vô hạn
             // Nếu không không được xử lý đúng cách
             // Vì nếu rơi vào trường hợp tại trang Login, chúng ta có gọi các API cần access token
             // Mà access token đã bị xóa thì nó lại nhảy vào đây, và cứ thế nó sẽ bị lặp
-            location.href = `/${locale}/login`;
+            location.href = `auth/login`;
           }
         }
       } else {
@@ -163,7 +163,7 @@ const request = async <Response>(
         Cookies.set('access_token', '', { path: '/', expires: new Date(0) });
         Cookies.set('refresh_token', '', { path: '/', expires: new Date(0) });
         if (isClient) {
-          window.location.href = '/login';
+          window.location.href = 'auth/login';
         }
       }
     } else {
@@ -177,28 +177,28 @@ const request = async <Response>(
     // Xử lý khi đăng nhập
     if ('auth/login' === normalizeUrl) {
       const { access_token, refresh_token } = (payload as LoginResType).data;
-      setAccessTokenToLocalStorage(access_token);
-      setRefreshTokenToLocalStorage(refresh_token);
+      setAccessToken(access_token);
+      setRefreshToken(refresh_token);
     }
     // Xử lý khi làm mới token (làm mới access_token và refresh_token)
-    else if ('api/auth/refresh-token' === normalizeUrl) {
+    else if ('auth/refresh-token' === normalizeUrl) {
       const { access_token, refresh_token } = payload as {
         access_token: string;
         refresh_token: string;
       };
-      setAccessTokenToLocalStorage(access_token);
-      setRefreshTokenToLocalStorage(refresh_token);
-    } else if ('api/auth/token' === normalizeUrl) {
+      setAccessToken(access_token);
+      setRefreshToken(refresh_token);
+    } else if ('auth/token' === normalizeUrl) {
       const { access_token, refresh_token } = payload as {
         access_token: string;
         refresh_token: string;
       };
-      setAccessTokenToLocalStorage(access_token);
-      setRefreshTokenToLocalStorage(refresh_token);
+      setAccessToken(access_token);
+      setRefreshToken(refresh_token);
     }
     // Xử lý khi đăng xuất
-    else if ('api/auth/logout' === normalizeUrl) {
-      removeTokensFromLocalStorage();
+    else if ('auth/logout' === normalizeUrl) {
+      removeTokens();
     }
   }
   return data;

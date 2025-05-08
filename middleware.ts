@@ -10,9 +10,9 @@ export function middleware(request: NextRequest) {
 
   // 1. Nếu người dùng chưa đăng nhập (không có access token và refresh token)
   if (!access_token && !refresh_token) {
-    // Nếu họ cố truy cập vào /dashboard, chuyển hướng về trang chủ /login
-    if (pathname.startsWith('/dashboard')) {
-      const redirectUrl = new URL('/login', request.url);
+    // Nếu họ cố truy cập vào /app, chuyển hướng về trang chủ /auth/login
+    if (pathname.startsWith('/app')) {
+      const redirectUrl = new URL('auth/login', request.url);
       return NextResponse.redirect(redirectUrl);
     }
 
@@ -23,18 +23,22 @@ export function middleware(request: NextRequest) {
   // 2. Nếu người dùng đã đăng nhập (có access token và refresh token)
   // Kiểm tra xem access token còn hạn không
   if (access_token && refresh_token) {
-    const decodedAccessToken = decodeToken(access_token.value);
-    const decodedRefreshToken = decodeToken(refresh_token.value);
+    const decodedAccessToken = decodeToken(
+      typeof access_token === 'string' ? access_token : access_token?.value
+    );
+    const decodedRefreshToken = decodeToken(
+      typeof refresh_token === 'string' ? refresh_token : refresh_token?.value
+    );
 
     const now = Math.round(new Date().getTime() / 1000);
 
     // Nếu access token hết hạn
-    if (decodedAccessToken.exp <= now) {
+    if (decodedAccessToken && decodedAccessToken.exp <= now) {
       // Kiểm tra xem refresh token còn hạn không
-      if (decodedRefreshToken.exp <= now) {
+      if (decodedRefreshToken && decodedRefreshToken.exp <= now) {
         // Nếu cả access token và refresh token đều hết hạn
         // Chuyển hướng về trang login
-        const redirectUrl = new URL('/login', request.url);
+        const redirectUrl = new URL('auth/login', request.url);
         return NextResponse.redirect(redirectUrl);
       }
 
@@ -46,8 +50,8 @@ export function middleware(request: NextRequest) {
     // 3. Nếu access token còn hạn
     // Cho phép truy cập tiếp tục
     // Nếu người dùng cố truy cập vào trang login hoặc trang chủ, chuyển hướng về trang dashboard
-    if (pathname === '/login' || pathname === '/') {
-      const redirectUrl = new URL('/dashboard', request.url);
+    if (pathname === 'auth/login') {
+      const redirectUrl = new URL('/app', request.url);
       return NextResponse.redirect(redirectUrl);
     }
     // Cho phép truy cập tiếp tục nếu ở trang dashboard
@@ -59,5 +63,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/dashboard', '/login', '/refresh-token'],
+  matcher: ['/', '/app', '/auth/login', '/refresh-token'],
 };

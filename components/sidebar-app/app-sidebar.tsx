@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 import {
   AudioWaveform,
   BookOpen,
@@ -14,7 +14,7 @@ import {
   PieChart,
   Search,
   SquareTerminal,
-} from "lucide-react";
+} from 'lucide-react';
 
 import {
   Sidebar,
@@ -23,121 +23,117 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import { NavMain } from "./nav-main";
-import { NavUser } from "./nav-user";
-import { TeamSwitcher } from "./team-switcher";
+} from '@/components/ui/sidebar';
+import { NavMain } from './nav-main';
+import { NavUser } from './nav-user';
+import { TeamSwitcher } from './team-switcher';
+import { UserContext } from '@/context/profileContext';
 
 // This is sample data.
 const data = {
-  user: {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    avatar: "/avatars/user.jpg",
-  },
   teams: [
     {
-      name: "Personal",
+      name: 'Personal',
       logo: Command,
-      plan: "Free",
+      plan: 'Free',
     },
     {
-      name: "Design Team",
+      name: 'Design Team',
       logo: GalleryVerticalEnd,
-      plan: "Pro",
+      plan: 'Pro',
     },
     {
-      name: "Marketing",
+      name: 'Marketing',
       logo: AudioWaveform,
-      plan: "Business",
+      plan: 'Business',
     },
   ],
   dashboard: [
     {
-      title: "Dashboard",
-      url: "/app",
+      title: 'Dashboard',
+      url: '/app',
       icon: SquareTerminal,
     },
   ],
   navMain1: [
     {
-      title: "Jobs",
-      url: "/app/jobs",
+      title: 'Jobs',
+      url: '/app/jobs',
       icon: BriefcaseBusiness,
     },
     {
-      title: "Job Tracker",
-      url: " /app/job-tracker",
+      title: 'Job Tracker',
+      url: ' /app/job-tracker',
       icon: PieChart,
     },
   ],
   documents: [
     {
-      title: "Documents",
-      url: "/app/documents",
+      title: 'Documents',
+      url: '/app/documents',
       icon: FileText,
       items: [
         {
-          title: "My Resumes",
-          url: "/app/documents/resumes",
+          title: 'My Resumes',
+          url: '/app/documents/resumes',
         },
         {
-          title: "My Cover Letters",
-          url: "/app/documents/cover-letters",
+          title: 'My Cover Letters',
+          url: '/app/documents/cover-letters',
         },
       ],
     },
   ],
   jobsearchmethods: [
     {
-      title: "Job Search Methods",
-      url: "/app/job-search-methods",
+      title: 'Job Search Methods',
+      url: '/app/job-search-methods',
       icon: Search,
       items: [
         {
-          title: "The Master Plan",
-          url: "/app/job-search-methods/master-plan",
+          title: 'The Master Plan',
+          url: '/app/job-search-methods/master-plan',
         },
         {
-          title: "Brand Yourself",
-          url: "/app/job-search-methods/brand-yourself",
+          title: 'Brand Yourself',
+          url: '/app/job-search-methods/brand-yourself',
         },
         {
-          title: "Get More Interviews",
-          url: "/app/job-search-methods/get-more-interviews",
+          title: 'Get More Interviews',
+          url: '/app/job-search-methods/get-more-interviews',
         },
         {
-          title: "Interview And Win",
-          url: "/app/job-search-methods/interview-and-win",
+          title: 'Interview And Win',
+          url: '/app/job-search-methods/interview-and-win',
         },
         {
-          title: "Close The Deal",
-          url: "/app/job-search-methods/close-the-deal",
+          title: 'Close The Deal',
+          url: '/app/job-search-methods/close-the-deal',
         },
       ],
     },
   ],
   resources: [
     {
-      title: "Resources",
-      url: "/resources",
+      title: 'Resources',
+      url: '/resources',
       icon: BookOpen,
       items: [
         {
-          title: "Resume Tips",
-          url: "/resources/tips",
+          title: 'Resume Tips',
+          url: '/resources/tips',
         },
         {
-          title: "Interview Prep",
-          url: "/resources/interview",
+          title: 'Interview Prep',
+          url: '/resources/interview',
         },
         {
-          title: "Career Blog",
-          url: "/resources/blog",
+          title: 'Career Blog',
+          url: '/resources/blog',
         },
         {
-          title: "FAQ",
-          url: "/resources/faq",
+          title: 'FAQ',
+          url: '/resources/faq',
         },
       ],
     },
@@ -145,6 +141,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = React.useContext(UserContext) || {};
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -157,9 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain collapsibleItems={data.resources} />
         <NavMain collapsibleItems={data.jobsearchmethods} />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
+      <SidebarFooter>{user ? <NavUser user={user} /> : null}</SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

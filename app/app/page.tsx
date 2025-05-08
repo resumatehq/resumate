@@ -14,9 +14,12 @@
 // }
 'use client';
 import DocumentsTabs from './documents/tabs';
+import React from 'react';
 import { BadgeCheck, BookOpen, LineChart, School, Crown } from 'lucide-react';
+import { UserContext } from '@/context/profileContext';
 
 export default function AppPage() {
+  const { user } = React.useContext(UserContext) || {};
   const services = [
     {
       title: 'Explore Career Insights',
@@ -59,7 +62,9 @@ export default function AppPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="space-y-1">
-          <h2 className="text-3xl font-bold text-gray-600">Hi, User!</h2>
+          <h2 className="text-3xl font-bold text-gray-600">
+            Hi, {user?.username}!
+          </h2>
           <h1 className="text-2xl font-medium text-gray-900">
             It's time to excel at your job
           </h1>

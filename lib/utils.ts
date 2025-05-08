@@ -8,15 +8,179 @@ import envConfig from '@/config';
 import { jwtDecode } from 'jwt-decode';
 import { TokenPayload } from '@/types/jwt.type';
 import authApiRequest from '@/apiRequest/auth.api';
+import Cookies from 'js-cookie';
 
+const isClient = typeof window !== 'undefined';
+
+// Constants
+const TOKEN_KEYS = {
+  ACCESS_TOKEN: 'access_token',
+  REFRESH_TOKEN: 'refresh_token',
+} as const;
+
+const COOKIE_OPTIONS = {
+  expires: 7, // 7 days
+  secure: true,
+  sameSite: 'lax' as const,
+  path: '/',
+} as const;
+
+// Utility functions
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const decodeToken = (token: string) => {
-  return jwtDecode(token) as TokenPayload;
+export const decodeToken = (token: string): TokenPayload | null => {
+  try {
+    return jwtDecode(token) as TokenPayload;
+  } catch (err) {
+    console.error('Error decoding token:', err);
+    return null;
+  }
 };
 
+// Token management functions
+export const getAccessToken = (): string | null => {
+  if (!isClient) return null;
+  return (
+    localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN) ||
+    Cookies.get(TOKEN_KEYS.ACCESS_TOKEN) ||
+    null
+  );
+};
+
+export const getRefreshToken = (): string | null => {
+  if (!isClient) return null;
+  return (
+    localStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN) ||
+    Cookies.get(TOKEN_KEYS.REFRESH_TOKEN) ||
+    null
+  );
+};
+
+export const setAccessToken = (token: string) => {
+  if (!isClient) return;
+
+  try {
+    const decodedToken = decodeToken(token);
+    if (!decodedToken) {
+      throw new Error('Invalid access token');
+    }
+
+    localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, token);
+    Cookies.set(TOKEN_KEYS.ACCESS_TOKEN, token, {
+      ...COOKIE_OPTIONS,
+      expires: new Date(decodedToken.exp * 1000),
+    });
+  } catch (error) {
+    console.error('Error setting access token:', error);
+    removeTokens();
+  }
+};
+
+export const setRefreshToken = (token: string) => {
+  if (!isClient) return;
+
+  try {
+    const decodedToken = decodeToken(token);
+    if (!decodedToken) {
+      throw new Error('Invalid refresh token');
+    }
+
+    localStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, token);
+    Cookies.set(TOKEN_KEYS.REFRESH_TOKEN, token, {
+      ...COOKIE_OPTIONS,
+      expires: new Date(decodedToken.exp * 1000),
+    });
+  } catch (error) {
+    console.error('Error setting refresh token:', error);
+    removeTokens();
+  }
+};
+
+export const removeTokens = () => {
+  if (!isClient) return;
+
+  localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN);
+  localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN);
+  Cookies.remove(TOKEN_KEYS.ACCESS_TOKEN);
+  Cookies.remove(TOKEN_KEYS.REFRESH_TOKEN);
+};
+
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    const decodedToken = decodeToken(token);
+    if (!decodedToken) return true;
+
+    const now = Math.round(Date.now() / 1000);
+    return decodedToken.exp <= now;
+  } catch {
+    return true;
+  }
+};
+
+export const checkAndRefreshToken = async (param?: {
+  onError?: () => void;
+  onSuccess?: () => void;
+  force?: boolean;
+}) => {
+  const access_token = getAccessToken();
+  const refresh_token = getRefreshToken();
+
+  if (!access_token || !refresh_token) {
+    console.warn('No tokens found for authentication');
+    param?.onError?.();
+    return;
+  }
+
+  const decodedAccessToken = decodeToken(access_token);
+  const decodedRefreshToken = decodeToken(refresh_token);
+
+  if (!decodedAccessToken || !decodedRefreshToken) {
+    console.warn('Invalid tokens');
+    removeTokens();
+    param?.onError?.();
+    return;
+  }
+
+  const now = Math.round(Date.now() / 1000);
+
+  // Check if refresh token is expired
+  if (decodedRefreshToken.exp <= now) {
+    console.warn('Refresh token has expired');
+    removeTokens();
+    param?.onError?.();
+    return;
+  }
+
+  // Check if access token needs refresh
+  const shouldRefresh =
+    param?.force ||
+    decodedAccessToken.exp - now <
+      (decodedAccessToken.exp - decodedAccessToken.iat) / 3;
+
+  if (shouldRefresh) {
+    try {
+      const { payload } = await authApiRequest.refreshToken({
+        refresh_token,
+      });
+
+      const { access_token: newAccessToken, refresh_token: newRefreshToken } =
+        payload.data;
+
+      setAccessToken(newAccessToken);
+      setRefreshToken(newRefreshToken);
+
+      param?.onSuccess?.();
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      removeTokens();
+      param?.onError?.();
+    }
+  }
+};
+
+// Error handling
 export const handleErrorApi = ({
   error,
   setError,
@@ -26,28 +190,24 @@ export const handleErrorApi = ({
   setError?: UseFormSetError<any>;
   duration?: number;
 }) => {
-  if (error && setError && error.payload && error.payload.errors) {
-    const errorsObject = error.payload.errors;
-    Object.entries(errorsObject).forEach(
+  if (error?.payload?.errors && setError) {
+    Object.entries(error.payload.errors).forEach(
       ([field, errorDetail]: [string, any]) => {
-        // errorDetail chứa thông tin chi tiết về lỗi cho từng trường
         setError(field, {
           type: 'server',
-          message: errorDetail.msg, // Sử dụng `msg` là thông báo lỗi từ API
+          message: errorDetail.msg,
         });
       }
     );
   } else {
     toast({
       title: 'Error',
-      description: error?.payload?.message ?? 'Error unknown',
+      description: error?.payload?.message ?? 'Unknown error occurred',
       variant: 'destructive',
       duration: duration ?? 5000,
     });
   }
 };
-
-const isClient = typeof window !== 'undefined';
 
 export const normalizePath = (path: string) => {
   return path.startsWith('/') ? path.slice(1) : path;
@@ -67,88 +227,5 @@ export const decryptData = (encryptedData: string): string => {
   } catch (error) {
     console.error('Lỗi khi giải mã:', error);
     return '';
-  }
-};
-
-// export const getAccessTokenFromLocalStorage = () => (isClient ? localStorage.getItem('access_token') : null)
-export const getAccessTokenFromLocalStorage = (): string | null => {
-  if (isClient) {
-    const encryptedToken = localStorage.getItem('access_token');
-    if (encryptedToken) {
-      return decryptData(encryptedToken);
-    }
-  }
-  return null;
-};
-
-// export const getRefreshTokenFromLocalStorage = () => (isClient ? localStorage.getItem('refresh_token') : null)
-export const getRefreshTokenFromLocalStorage = (): string | null => {
-  if (isClient) {
-    const encryptedToken = localStorage.getItem('refresh_token');
-    if (encryptedToken) {
-      return decryptData(encryptedToken);
-    }
-  }
-  return null;
-};
-
-export const setAccessTokenToLocalStorage = (value: string) => {
-  if (isClient) {
-    const encryptedToken = encryptData(value);
-    localStorage.setItem('access_token', encryptedToken);
-  }
-};
-
-export const setRefreshTokenToLocalStorage = (value: string) => {
-  if (isClient) {
-    const encryptedToken = encryptData(value);
-    localStorage.setItem('refresh_token', encryptedToken);
-  }
-};
-
-export const removeTokensFromLocalStorage = () => {
-  isClient && localStorage.removeItem('access_token');
-  isClient && localStorage.removeItem('refresh_token');
-};
-
-export const checkAndRefreshToken = async (param?: {
-  onError?: () => void;
-  onSuccess?: () => void;
-  force?: boolean;
-}) => {
-  const access_token = getAccessTokenFromLocalStorage();
-  const refresh_token = getRefreshTokenFromLocalStorage();
-  // Chưa đăng nhập thì cũng không cho chạy
-  if (!access_token || !refresh_token) return;
-  const decodedAccessToken = decodeToken(access_token);
-  const decodedRefreshToken = decodeToken(refresh_token);
-
-  // Thời điểm hết hạn của token là tính theo epoch time (s)
-  // Còn khi các bạn dùng cú pháp new Date().getTime() thì nó sẽ trả về epoch time (ms)
-  const now = Math.round(new Date().getTime() / 1000);
-  // trường hợp refresh token hết hạn thì cho logout
-  if (decodedRefreshToken.exp <= now) {
-    removeTokensFromLocalStorage();
-    return param?.onError && param.onError();
-  }
-
-  // trường hợp access token hết hạn thì refresh token
-  if (
-    param?.force ||
-    decodedAccessToken.exp - now <
-      (decodedAccessToken.exp - decodedAccessToken.iat) / 3
-  ) {
-    try {
-      const { payload } = await authApiRequest.refreshToken();
-      const { access_token, refresh_token } = payload.data;
-
-      setAccessTokenToLocalStorage(access_token);
-      setRefreshTokenToLocalStorage(refresh_token);
-
-      param?.onSuccess && param.onSuccess();
-    } catch (error) {
-      removeTokensFromLocalStorage();
-      param?.onError && param.onError();
-    }
   }
 };

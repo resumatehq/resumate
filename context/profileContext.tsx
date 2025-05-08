@@ -1,6 +1,6 @@
 'use client';
 
-import { getAccessTokenFromLocalStorage } from '@/lib/utils';
+import { getAccessToken } from '@/lib/utils';
 import { useGetMeMutation } from '@/queries/useAccount';
 import { AccountType } from '@/schemas/account.schema';
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
@@ -22,8 +22,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AccountType | null>(null);
   const me = useGetMeMutation(); // Gọi hook ở đây
 
-  const isLoggin =
-    getAccessTokenFromLocalStorage() && getAccessTokenFromLocalStorage();
+  const isLoggin = getAccessToken() && getAccessToken();
 
   useEffect(() => {
     const fetchData = async () => {
