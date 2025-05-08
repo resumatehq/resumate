@@ -15,7 +15,6 @@ export async function GET() {
     }
 
     const response = await resumeApiRequest.sGetResumes(access_token);
-    console.log('API response from backend:', response.payload);
     
     return NextResponse.json(response.payload);
   } catch (error: any) {

@@ -20,7 +20,13 @@ export async function GET(
 
     const { resumeId } = params;
     const response = await resumeApiRequest.sGetResumeById(resumeId, access_token);
-    return NextResponse.json(response.payload);
+    return NextResponse.json({
+      message: "Resume retrieved successfully",
+      status: 200,
+      data: {
+        resume: response.payload
+      }
+    });
   } catch (error: any) {
     console.error(`Error fetching resume ${params.resumeId}:`, error);
     return NextResponse.json(

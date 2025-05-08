@@ -126,12 +126,15 @@ function ResumeCard({
   resume: ResumeType;
   onDelete: (id: string) => void;
 }) {
-  const { _id, title, targetPosition, industry, updatedAt } = resume;
-  const formattedDate = new Date(updatedAt).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const { _id, title, targetPosition, industry, metadata } = resume;
+  const formattedDate = new Date(metadata.updatedAt).toLocaleDateString(
+    "en-US",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+  );
 
   const completionPercentage = 75;
 

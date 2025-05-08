@@ -1,5 +1,5 @@
 import http from '@/lib/http';
-import { CreateResumeType, ResumeType, ShareResumeType, UpdateResumeType, UpdateShareResumeType } from '@/schemas/resume.schema';
+import { CreateResumeType, ResumeType, ShareResumeType, UpdateResumeType, UpdateShareResumeType, ResumeResponse } from '@/schemas/resume.schema';
 
 const resumeApiRequest = {
   // Client -> Next Server APIs
@@ -9,7 +9,7 @@ const resumeApiRequest = {
     }),
 
   getResumeById: (resumeId: string) =>
-    http.get<ResumeType>(`api/resume/${resumeId}`, {
+    http.get<ResumeResponse>(`api/resume/${resumeId}`, {
       baseUrl: '',
     }),
 
@@ -37,7 +37,7 @@ const resumeApiRequest = {
     }),
 
   sGetResumeById: (resumeId: string, token: string) =>
-    http.get<ResumeType>(`resumes/${resumeId}`, {
+    http.get<ResumeResponse>(`resumes/${resumeId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

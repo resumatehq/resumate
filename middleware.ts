@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
   if (!access_token && !refresh_token) {
     // Nếu họ cố truy cập vào /app, chuyển hướng về trang chủ /auth/login
     if (pathname.startsWith('/app')) {
-      const redirectUrl = new URL('auth/login', request.url);
+      const redirectUrl = new URL('/auth/login', request.url);
       return NextResponse.redirect(redirectUrl);
     }
 

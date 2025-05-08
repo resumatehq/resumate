@@ -1,15 +1,48 @@
-import { Key } from "react";
+export interface SectionType {
+  _id: string;
+  type: string;
+  title: string;
+  enabled: boolean;
+  order: number;
+  content: any;
+  settings: {
+    visibility: string;
+    layout: string;
+    styling: Record<string, any>;
+  };
+}
 
 export interface ResumeType {
-  _id: Key | null | undefined;
-  id: string;
+  _id: string;
+  userId: string;
   title: string;
   templateId: string;
   targetPosition?: string;
   industry?: string;
+  language: string;
   sections: SectionType[];
-  createdAt: string;
-  updatedAt: string;
+  metadata: {
+    createdAt: string;
+    updatedAt: string;
+    isPublished: boolean;
+    currentVersion: number;
+    viewCount: number;
+    shareableLink: string | null;
+    sharingOptions: {
+      password: string | null;
+      expiresAt: string | null;
+      allowDownload: boolean;
+      allowFeedback: boolean;
+    };
+  };
+}
+
+export interface ResumeResponse {
+  message: string;
+  status: number;
+  data: {
+    resume: ResumeType;
+  };
 }
 
 export interface CreateResumeType {
@@ -25,15 +58,6 @@ export interface UpdateResumeType {
   targetPosition?: string;
   templateId?: string;
   industry?: string;
-}
-
-export interface SectionType {
-  id: string;
-  type: string;
-  title: string;
-  isVisible: boolean;
-  content: any;
-  order?: number;
 }
 
 export interface ExperienceContent {
@@ -76,7 +100,13 @@ export interface ShareResumeType {
   allowEmbed?: boolean;
 }
 
-export interface UpdateShareResumeType extends ShareResumeType {}
+export interface UpdateShareResumeType {
+  password?: string;
+  expiresAt?: string;
+  allowDownload?: boolean;
+  allowFeedback?: boolean;
+  allowEmbed?: boolean;
+}
 
 export interface ResumeVersionType {
   versionNumber: number;
