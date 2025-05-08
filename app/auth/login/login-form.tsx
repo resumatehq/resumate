@@ -48,11 +48,6 @@ export default function LoginForm({ className, ...props }: SignInFormProps) {
       console.log(data);
       const res = await loginMutation.mutateAsync(data);
       console.log('dang nhap thanh cong', res.payload.data);
-
-      // const response = await me.mutateAsync();
-
-      // console.log('dang nhap thanh cong', response.payload.data);
-
       toast({
         description: res.payload.message,
       });

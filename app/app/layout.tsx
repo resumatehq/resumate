@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import type React from "react";
+import type React from 'react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,18 +8,19 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import { Fragment } from "react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/sidebar-app/app-sidebar";
+} from '@/components/ui/breadcrumb';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { Fragment } from 'react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/sidebar-app/app-sidebar';
+import RefreshToken from '@/components/refresh-token';
 
 function generateBreadcrumbs(pathname: string) {
-  const paths = pathname.split("/").filter(Boolean);
+  const paths = pathname.split('/').filter(Boolean);
 
   return paths.map((path, index) => {
-    const href = "/" + paths.slice(0, index + 1).join("/");
+    const href = '/' + paths.slice(0, index + 1).join('/');
     const label = path.charAt(0).toUpperCase() + path.slice(1);
 
     return {
@@ -38,7 +39,7 @@ export default function AppLayout({
   const pathname = usePathname();
   const breadcrumbs = generateBreadcrumbs(pathname);
 
-  if (pathname === "/") return <div className="flex-1 p-4">{children}</div>;
+  if (pathname === '/') return <div className="flex-1 p-4">{children}</div>;
 
   return (
     <div className="flex w-full min-h-screen">
@@ -80,6 +81,7 @@ export default function AppLayout({
           <div>{children}</div>
         </div>
       </div>
+      <RefreshToken />
     </div>
   );
 }

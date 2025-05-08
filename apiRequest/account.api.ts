@@ -4,15 +4,23 @@ import { AccountResType } from '@/schemas/account.schema';
 
 const accountApiRequest = {
   me: () =>
-    http.get<AccountResType>('/users/profile', {
+    http.get<AccountResType>('users/profile', {
       baseUrl: envConfig.NEXT_PUBLIC_API_ENDPOINT,
     }),
 
   sMe: (access_token: string) =>
-    http.get<AccountResType>('/users/profile', {
+    http.get<AccountResType>('users/profile', {
       headers: {
         Authorization: `Bearer ${access_token}`,
       },
     }),
+  updateMe: async (data: any, token: string) => {
+    return http.put('/users/profile', data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+  },
 };
 export default accountApiRequest;
