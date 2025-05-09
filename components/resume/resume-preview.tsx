@@ -19,6 +19,11 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
     return <div>Loading...</div>;
   }
 
+  // Ensure resume.sections exists and is an array
+  if (!resume.sections || !Array.isArray(resume.sections)) {
+    return <div>No sections available</div>;
+  }
+
   // Find specific sections
   const personalSection = resume.sections.find((s) => s.type === "personal");
   const summarySection = resume.sections.find((s) => s.type === "summary");
@@ -32,6 +37,23 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
     (s) => s.type === "certifications"
   );
   const awardsSection = resume.sections.find((s) => s.type === "awards");
+
+  // Helper function to safely get content
+  const getSafeContent = (content: any) => {
+    if (!content) return null;
+    if (typeof content === "string") return content;
+    if (typeof content === "object" && content !== null) {
+      // Check if it's an object with category and skills
+      if (content.category && content.skills) {
+        return `${content.category}: ${
+          Array.isArray(content.skills)
+            ? content.skills.join(", ")
+            : content.skills
+        }`;
+      }
+    }
+    return content;
+  };
 
   // Helper function to render section content based on type
   const renderSectionContent = (section: IResumeSection) => {
@@ -105,8 +127,8 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
         return (
           <div className="mb-4">
             <p className="text-gray-700">
-              {summaryContent.content ||
-                summaryContent.professionalSummary ||
+              {getSafeContent(summaryContent.content) ||
+                getSafeContent(summaryContent.professionalSummary) ||
                 "Professional summary"}
             </p>
           </div>
@@ -142,14 +164,16 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
                   </div>
                 </div>
                 {exp.description && (
-                  <p className="mt-2 text-gray-700">{exp.description}</p>
+                  <p className="mt-2 text-gray-700">
+                    {getSafeContent(exp.description)}
+                  </p>
                 )}
                 {exp.achievements &&
                   Array.isArray(exp.achievements) &&
                   exp.achievements.length > 0 && (
                     <ul className="list-disc list-inside mt-2 text-gray-700">
                       {exp.achievements.map((achievement, j) => (
-                        <li key={j}>{achievement}</li>
+                        <li key={j}>{getSafeContent(achievement)}</li>
                       ))}
                     </ul>
                   )}
@@ -171,11 +195,13 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-semibold">
-                      {edu.institution || "Institution"}
+                      {edu.institution || edu.school || "Institution"}
                     </h3>
                     <h4 className="text-gray-700">
                       {edu.degree || "Degree"}
-                      {edu.fieldOfStudy ? `, ${edu.fieldOfStudy}` : ""}
+                      {edu.fieldOfStudy || edu.field
+                        ? `, ${edu.fieldOfStudy || edu.field}`
+                        : ""}
                     </h4>
                   </div>
                   <div className="text-right text-gray-600 text-sm">
@@ -192,7 +218,7 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
                   edu.achievements.length > 0 && (
                     <ul className="list-disc list-inside mt-2 text-gray-700">
                       {edu.achievements.map((achievement, j) => (
-                        <li key={j}>{achievement}</li>
+                        <li key={j}>{getSafeContent(achievement)}</li>
                       ))}
                     </ul>
                   )}
@@ -203,76 +229,117 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
 
       case "skills":
         // Get skills content
-        let skillsContent: ISkillContent;
+        let skillsContent: ISkillContent | any;
         if (Array.isArray(section.content) && section.content.length > 0) {
-          skillsContent = section.content[0] as ISkillContent;
+          skillsContent = section.content[0];
         } else if (
           typeof section.content === "object" &&
           section.content !== null
         ) {
-          skillsContent = section.content as unknown as ISkillContent;
+          skillsContent = section.content;
         } else {
-          skillsContent = {
-            technical: [],
-            soft: [],
-            languages: [],
-          } as ISkillContent;
+          skillsContent = { technical: [], soft: [], languages: [] };
+        }
+
+        // Handle different possible formats of skills data
+        let technicalSkills: string[] = [];
+        let softSkills: string[] = [];
+        let languageSkills: string[] = [];
+
+        // Format 1: {technical: [], soft: [], languages: []}
+        if (Array.isArray(skillsContent.technical)) {
+          technicalSkills = skillsContent.technical;
+        }
+        if (Array.isArray(skillsContent.soft)) {
+          softSkills = skillsContent.soft;
+        }
+        if (Array.isArray(skillsContent.languages)) {
+          languageSkills = skillsContent.languages;
+        }
+
+        // Format 2: {skills: [{category: "Technical", items: []}, ...]}
+        if (skillsContent.skills && Array.isArray(skillsContent.skills)) {
+          skillsContent.skills.forEach((skillGroup: any) => {
+            if (
+              skillGroup.category &&
+              skillGroup.items &&
+              Array.isArray(skillGroup.items)
+            ) {
+              const category = skillGroup.category.toLowerCase();
+              if (category.includes("technical")) {
+                technicalSkills = [...technicalSkills, ...skillGroup.items];
+              } else if (category.includes("soft")) {
+                softSkills = [...softSkills, ...skillGroup.items];
+              } else if (category.includes("language")) {
+                languageSkills = [...languageSkills, ...skillGroup.items];
+              } else {
+                // Default to technical if unknown
+                technicalSkills = [...technicalSkills, ...skillGroup.items];
+              }
+            }
+          });
         }
 
         return (
           <div>
-            {skillsContent.technical &&
-              Array.isArray(skillsContent.technical) &&
-              skillsContent.technical.length > 0 && (
-                <div className="mb-3">
-                  <h3 className="font-semibold mb-1">Technical Skills</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {skillsContent.technical.map((skill, i) => (
-                      <span
-                        key={i}
-                        className="bg-gray-100 px-2 py-1 rounded text-sm"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
+            {technicalSkills.length > 0 && (
+              <div className="mb-3">
+                <h3 className="font-semibold mb-1">Technical Skills</h3>
+                <div className="flex flex-wrap gap-2">
+                  {technicalSkills.map((skill, i) => (
+                    <span
+                      key={i}
+                      className="bg-gray-100 px-2 py-1 rounded text-sm"
+                    >
+                      {typeof skill === "string"
+                        ? skill
+                        : JSON.stringify(skill)}
+                    </span>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-            {skillsContent.soft &&
-              Array.isArray(skillsContent.soft) &&
-              skillsContent.soft.length > 0 && (
-                <div className="mb-3">
-                  <h3 className="font-semibold mb-1">Soft Skills</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {skillsContent.soft.map((skill, i) => (
-                      <span
-                        key={i}
-                        className="bg-gray-100 px-2 py-1 rounded text-sm"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
+            {softSkills.length > 0 && (
+              <div className="mb-3">
+                <h3 className="font-semibold mb-1">Soft Skills</h3>
+                <div className="flex flex-wrap gap-2">
+                  {softSkills.map((skill, i) => (
+                    <span
+                      key={i}
+                      className="bg-gray-100 px-2 py-1 rounded text-sm"
+                    >
+                      {typeof skill === "string"
+                        ? skill
+                        : JSON.stringify(skill)}
+                    </span>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-            {skillsContent.languages &&
-              Array.isArray(skillsContent.languages) &&
-              skillsContent.languages.length > 0 && (
-                <div className="mb-3">
-                  <h3 className="font-semibold mb-1">Languages</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {skillsContent.languages.map((language, i) => (
-                      <span
-                        key={i}
-                        className="bg-gray-100 px-2 py-1 rounded text-sm"
-                      >
-                        {language}
-                      </span>
-                    ))}
-                  </div>
+            {languageSkills.length > 0 && (
+              <div className="mb-3">
+                <h3 className="font-semibold mb-1">Languages</h3>
+                <div className="flex flex-wrap gap-2">
+                  {languageSkills.map((language, i) => (
+                    <span
+                      key={i}
+                      className="bg-gray-100 px-2 py-1 rounded text-sm"
+                    >
+                      {typeof language === "string"
+                        ? language
+                        : JSON.stringify(language)}
+                    </span>
+                  ))}
                 </div>
+              </div>
+            )}
+
+            {technicalSkills.length === 0 &&
+              softSkills.length === 0 &&
+              languageSkills.length === 0 && (
+                <div className="text-gray-500 italic">No skills added yet</div>
               )}
           </div>
         );
@@ -303,7 +370,9 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
                   )}
                 </div>
                 {project.description && (
-                  <p className="mt-2 text-gray-700">{project.description}</p>
+                  <p className="mt-2 text-gray-700">
+                    {getSafeContent(project.description)}
+                  </p>
                 )}
                 {project.technologies &&
                   Array.isArray(project.technologies) &&
@@ -313,7 +382,13 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
                         Technologies:{" "}
                       </span>
                       <span className="text-sm text-gray-700">
-                        {project.technologies.join(", ")}
+                        {project.technologies
+                          .map((tech) =>
+                            typeof tech === "string"
+                              ? tech
+                              : JSON.stringify(tech)
+                          )
+                          .join(", ")}
                       </span>
                     </div>
                   )}

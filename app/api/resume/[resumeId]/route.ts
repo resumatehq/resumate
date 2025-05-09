@@ -20,13 +20,9 @@ export async function GET(
 
     const { resumeId } = params;
     const response = await resumeApiRequest.sGetResumeById(resumeId, access_token);
-    return NextResponse.json({
-      message: "Resume retrieved successfully",
-      status: 200,
-      data: {
-        resume: response.payload
-      }
-    });
+    
+    // Trả về trực tiếp payload từ backend, không bọc thêm cấp nữa
+    return NextResponse.json(response.payload);
   } catch (error: any) {
     console.error(`Error fetching resume ${params.resumeId}:`, error);
     return NextResponse.json(

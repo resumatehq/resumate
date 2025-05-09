@@ -39,9 +39,10 @@ export const useGetResumeByIdQuery = (resumeId: string) => {
       const response = await resumeApiRequest.getResumeById(resumeId);
       console.log("API Response:", response); // Debug log
 
-      // Extract the deeply nested resume data
-      if (response?.payload?.data?.resume?.data?.resume) {
-        return response.payload.data.resume.data.resume;
+      // Giờ response.payload sẽ là dữ liệu trực tiếp từ backend
+      // Kiểm tra cấu trúc và trích xuất dữ liệu resume
+      if (response?.payload?.data?.resume) {
+        return response.payload.data.resume;
       }
 
       // Fallback to empty resume to avoid undefined
