@@ -152,7 +152,7 @@ const request = async <Response>(
             // Nếu không không được xử lý đúng cách
             // Vì nếu rơi vào trường hợp tại trang Login, chúng ta có gọi các API cần access token
             // Mà access token đã bị xóa thì nó lại nhảy vào đây, và cứ thế nó sẽ bị lặp
-            location.href = `auth/login`;
+            location.href = `/auth/login`;
           }
         }
       } else {
@@ -163,7 +163,7 @@ const request = async <Response>(
         Cookies.set('access_token', '', { path: '/', expires: new Date(0) });
         Cookies.set('refresh_token', '', { path: '/', expires: new Date(0) });
         if (isClient) {
-          window.location.href = 'auth/login';
+          window.location.href = '/auth/login';
         }
       }
     } else {

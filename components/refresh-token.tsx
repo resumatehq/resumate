@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
 // import { useAppStore } from '@/components/app-provider'
-import { checkAndRefreshToken } from '@/lib/utils';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { checkAndRefreshToken } from "@/lib/utils";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 // Những page sau sẽ không check refesh token
-const UNAUTHENTICATED_PATH = ['/auth/login', '/auth/logout', '/refresh-token'];
+const UNAUTHENTICATED_PATH = ["/auth/login", "/auth/logout", "/refresh-token"];
 export default function RefreshToken() {
   const pathname = usePathname();
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function RefreshToken() {
       checkAndRefreshToken({
         onError: () => {
           clearInterval(interval);
-          router.push('auth/login');
+          router.push("/auth/login");
         },
         force,
       });
