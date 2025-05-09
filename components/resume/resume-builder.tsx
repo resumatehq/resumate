@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useResume } from "@/context/resume-context";
-import { IResume } from "@/schemas/resume.schema";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react';
+import { useResume } from '@/context/resume-context';
+import { IResume } from '@/schemas/resume.schema';
+import { Button } from '@/components/ui/button';
 import {
   Plus,
   Save,
@@ -13,12 +13,16 @@ import {
   Settings,
   Undo,
   Redo,
-} from "lucide-react";
-import { SectionType } from "@/schemas/resume.schema";
-import { SectionEditor } from "./section-editor";
-import { ResumePreview } from "./resume-preview";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
+} from 'lucide-react';
+import { SectionType } from '@/schemas/resume.schema';
+import { SectionEditor } from './section-editor';
+import { ResumePreview } from './resume-preview';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
+import { useCreateResumeMutation } from '@/queries/useResume';
+import { toast } from '@/hooks/use-toast';
+import { CreateResumeType } from '@/schemas/resume.schema';
+import { useRouter } from 'next/navigation';
 
 interface ResumeBuilderProps {
   initialResume?: IResume;
@@ -26,26 +30,28 @@ interface ResumeBuilderProps {
 
 export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   const { resume, setResume, addSection } = useResume();
-  const [previewMode, setPreviewMode] = useState<"split" | "full" | "hidden">(
-    "split"
+  const [previewMode, setPreviewMode] = useState<'split' | 'full' | 'hidden'>(
+    'split'
   );
-  const [activeTab, setActiveTab] = useState("edit");
+  const [activeTab, setActiveTab] = useState('edit');
 
-  // Debug logs
-  console.log("initialResume in ResumeBuilder:", initialResume);
-  console.log("resume state in ResumeBuilder:", resume);
+  const createResumeMutation = useCreateResumeMutation();
+  const router = useRouter();
+  // // Debug logs
+  // console.log('initialResume in ResumeBuilder:', initialResume);
+  // console.log('resume state in ResumeBuilder:', resume);
 
   useEffect(() => {
-    console.log("useEffect triggered with initialResume:", initialResume);
+    console.log('useEffect triggered with initialResume:', initialResume);
     if (initialResume) {
-      console.log("Setting resume with initialResume");
+      console.log('Setting resume with initialResume');
       setResume(initialResume);
     }
   }, [initialResume, setResume]);
 
   // Check if resume exists and has sections
   if (!resume || !Array.isArray(resume.sections)) {
-    console.log("Showing loading state. Resume:", resume);
+    console.log('Showing loading state. Resume:', resume);
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -63,22 +69,73 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   };
 
   const togglePreviewMode = () => {
-    if (previewMode === "split") {
-      setPreviewMode("full");
-    } else if (previewMode === "full") {
-      setPreviewMode("hidden");
+    if (previewMode === 'split') {
+      setPreviewMode('full');
+    } else if (previewMode === 'full') {
+      setPreviewMode('hidden');
     } else {
-      setPreviewMode("split");
+      setPreviewMode('split');
     }
   };
 
+  const handleSave = async () => {
+    if (!resume) return;
+
+    try {
+      // Hiển thị trạng thái đang lưu
+      toast({
+        title: 'Saving...',
+        description: 'Please wait while we save your resume',
+      });
+
+      // Chuẩn bị dữ liệu theo CreateResumeType
+      const resumeData: CreateResumeType = {
+        title: resume.title,
+        templateId: resume.templateId,
+        language: resume.language,
+        sections: resume.sections.map((section) => ({
+          ...section,
+          content: section.content || [],
+          settings: section.settings || {
+            visibility: 'public',
+            layout: 'standard',
+            styling: {},
+          },
+        })),
+        targetPosition: resume.targetPosition,
+        industry: resume.industry,
+      };
+
+      // Gọi API tạo resume
+      const response = await createResumeMutation.mutateAsync(resumeData);
+
+      // Hiển thị thông báo thành công
+      toast({
+        title: 'Success',
+        description: 'Resume saved successfully',
+      });
+      console.log('thanh cong');
+
+      // Chuyển hướng đến trang edit resume
+      if (response.payload?._id) {
+        router.push(`/app/documents/resumes/${response.payload._id}/edit`);
+      }
+    } catch (error: any) {
+      console.error('Error saving resume:', error);
+      toast({
+        title: 'Error',
+        description: error?.payload?.message || 'Failed to save resume',
+        variant: 'destructive',
+      });
+    }
+  };
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <h1 className="text-2xl font-bold text-gray-800">
-            {resume.title || "Untitled Resume"}
+            {resume.title || 'Untitled Resume'}
           </h1>
           <div className="flex items-center space-x-2">
             <Button variant="outline" size="sm">
@@ -90,12 +147,12 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
               Redo
             </Button>
             <Button variant="outline" size="sm" onClick={togglePreviewMode}>
-              {previewMode === "hidden" ? (
+              {previewMode === 'hidden' ? (
                 <>
                   <Eye className="w-4 h-4 mr-2" />
                   Show Preview
                 </>
-              ) : previewMode === "full" ? (
+              ) : previewMode === 'full' ? (
                 <>
                   <EyeOff className="w-4 h-4 mr-2" />
                   Hide Preview
@@ -107,7 +164,7 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
                 </>
               )}
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleSave}>
               <Save className="w-4 h-4 mr-2" />
               Save
             </Button>
@@ -122,10 +179,10 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
       {/* Main content */}
       <div className="flex-1 overflow-hidden flex">
         {/* Editor area - hidden in full preview mode */}
-        {previewMode !== "full" && (
+        {previewMode !== 'full' && (
           <div
             className={`${
-              previewMode === "split" ? "w-1/2" : "w-full"
+              previewMode === 'split' ? 'w-1/2' : 'w-full'
             } h-full overflow-y-auto border-r`}
           >
             <div className="p-6">
@@ -143,7 +200,7 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleAddSection("personal")}
+                        onClick={() => handleAddSection('personal')}
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Section
@@ -222,10 +279,10 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
         )}
 
         {/* Preview area - hidden in hidden preview mode */}
-        {previewMode !== "hidden" && (
+        {previewMode !== 'hidden' && (
           <div
             className={`${
-              previewMode === "split" ? "w-1/2" : "w-full"
+              previewMode === 'split' ? 'w-1/2' : 'w-full'
             } h-full overflow-y-auto bg-gray-100`}
           >
             <div className="p-6 flex justify-center">

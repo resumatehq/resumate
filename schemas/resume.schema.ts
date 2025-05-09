@@ -1,5 +1,18 @@
-export type SectionType = 'personal' | 'summary' | 'education' | 'experience' | 'skills' | 'projects' |
-  'references' | 'certifications' | 'awards' | 'publications' | 'languages' | 'interests' | 'volunteer' | 'custom';
+export type SectionType =
+  | 'personal'
+  | 'summary'
+  | 'education'
+  | 'experience'
+  | 'skills'
+  | 'projects'
+  | 'references'
+  | 'certifications'
+  | 'awards'
+  | 'publications'
+  | 'languages'
+  | 'interests'
+  | 'volunteer'
+  | 'custom';
 
 export interface ISectionContent {
   [key: string]: any;
@@ -98,7 +111,7 @@ export interface IResumeSection {
 
 export interface IResume {
   _id?: string;
-  userId: string;
+  userId?: string;
   title: string;
   targetPosition?: string;
   industry?: string;
@@ -157,7 +170,18 @@ export interface ResumeResponse {
   };
 }
 
-export type CreateResumeType = Omit<IResume, '_id' | 'userId' | 'createdAt' | 'updatedAt' | 'metadata' | 'atsScore' | 'keywords' | 'aiSuggestions' | 'analytics'>;
+export type CreateResumeType = Omit<
+  IResume,
+  | '_id'
+  | 'userId'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'metadata'
+  | 'atsScore'
+  | 'keywords'
+  | 'aiSuggestions'
+  | 'analytics'
+>;
 export type UpdateResumeType = Partial<CreateResumeType>;
 export type ShareResumeType = {
   password?: string;
@@ -210,4 +234,4 @@ export interface ResumeVersionType {
 export interface CreateVersionType {
   versionName: string;
   description: string;
-} 
+}

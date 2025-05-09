@@ -1,5 +1,12 @@
 import http from '@/lib/http';
-import { CreateResumeType, ResumeType, ShareResumeType, UpdateResumeType, UpdateShareResumeType, ResumeResponse } from '@/schemas/resume.schema';
+import {
+  CreateResumeType,
+  ResumeType,
+  ShareResumeType,
+  UpdateResumeType,
+  UpdateShareResumeType,
+  ResumeResponse,
+} from '@/schemas/resume.schema';
 
 const resumeApiRequest = {
   // Client -> Next Server APIs
@@ -81,20 +88,29 @@ const resumeApiRequest = {
 
   deleteSection: (resumeId: string, sectionId: string) =>
     http.delete(`/resumes/${resumeId}/sections/${sectionId}`),
-  toggleSectionVisibility: (resumeId: string, sectionId: string, enabled: boolean) =>
-    http.put(`/resumes/${resumeId}/sections/${sectionId}/visibility`, { enabled }),
+  toggleSectionVisibility: (
+    resumeId: string,
+    sectionId: string,
+    enabled: boolean
+  ) =>
+    http.put(`/resumes/${resumeId}/sections/${sectionId}/visibility`, {
+      enabled,
+    }),
 
-  reorderSections: (resumeId: string, sectionOrders: { sectionId: string; order: number }[]) =>
-    http.post(`/resumes/${resumeId}/sections/reorder`, { sectionOrders }),
+  reorderSections: (
+    resumeId: string,
+    sectionOrders: { sectionId: string; order: number }[]
+  ) => http.post(`/resumes/${resumeId}/sections/reorder`, { sectionOrders }),
   saveContinueSection: (resumeId: string, sectionId: string) =>
     http.put(`/resumes/${resumeId}/sections/${sectionId}/save-continue`, {}),
 
   // Version Control
-  getVersions: (resumeId: string) =>
-    http.get(`/resumes/${resumeId}/versions`),
+  getVersions: (resumeId: string) => http.get(`/resumes/${resumeId}/versions`),
 
-  createVersion: (resumeId: string, data: { versionName: string; description: string }) =>
-    http.post(`/resumes/${resumeId}/versions`, data),
+  createVersion: (
+    resumeId: string,
+    data: { versionName: string; description: string }
+  ) => http.post(`/resumes/${resumeId}/versions`, data),
   restoreVersion: (resumeId: string, versionNumber: number) =>
     http.post(`/resumes/${resumeId}/versions/${versionNumber}/restore`, {}),
 
@@ -110,7 +126,6 @@ const resumeApiRequest = {
 
   generateQRCode: (resumeId: string, size?: number) =>
     http.get(`/resumes/${resumeId}/share/qrcode${size ? `?size=${size}` : ''}`),
-
 };
 
-export default resumeApiRequest; 
+export default resumeApiRequest;

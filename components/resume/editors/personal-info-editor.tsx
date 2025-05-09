@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useResume } from "@/context/resume-context";
-import { IResumeSection, IPersonalInfoContent } from "@/schemas/resume.schema";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useEffect } from "react";
+import { useResume } from '@/context/resume-context';
+import { IResumeSection, IPersonalInfoContent } from '@/schemas/resume.schema';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useEffect } from 'react';
 
 interface PersonalInfoEditorProps {
   section: IResumeSection;
@@ -16,14 +16,14 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
 
   // Initialize with empty content if it doesn't exist
   const content = (section.content[0] as IPersonalInfoContent) || {
-    fullName: "",
-    jobTilte: "", // Note: There's a typo in the schema, should be jobTitle
-    email: "",
-    phone: "",
-    location: "",
-    website: "",
+    fullName: '',
+    jobTilte: '', // Note: There's a typo in the schema, should be jobTitle
+    email: '',
+    phone: '',
+    location: '',
+    website: '',
     socialLinks: {},
-    professionalSummary: "",
+    professionalSummary: '',
   };
 
   // Initialize content if it doesn't exist
@@ -31,14 +31,14 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
     if (!section.content || section.content.length === 0) {
       updateSectionContent(section._id!, [
         {
-          fullName: "",
-          jobTilte: "",
-          email: "",
-          phone: "",
-          location: "",
-          website: "",
+          fullName: '',
+          jobTilte: '',
+          email: '',
+          phone: '',
+          location: '',
+          website: '',
           socialLinks: {},
-          professionalSummary: "",
+          professionalSummary: '',
         },
       ]);
     }
@@ -70,16 +70,16 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
           <Label htmlFor="fullName">Full Name</Label>
           <Input
             id="fullName"
-            value={content.fullName || ""}
-            onChange={(e) => handleChange("fullName", e.target.value)}
+            value={content.fullName || ''}
+            onChange={(e) => handleChange('fullName', e.target.value)}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="jobTitle">Job Title</Label>
           <Input
             id="jobTitle"
-            value={content.jobTilte || ""}
-            onChange={(e) => handleChange("jobTilte", e.target.value)}
+            value={content.jobTilte || ''}
+            onChange={(e) => handleChange('jobTilte', e.target.value)}
           />
         </div>
       </div>
@@ -90,16 +90,16 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
           <Input
             id="email"
             type="email"
-            value={content.email || ""}
-            onChange={(e) => handleChange("email", e.target.value)}
+            value={content.email || ''}
+            onChange={(e) => handleChange('email', e.target.value)}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="phone">Phone</Label>
           <Input
             id="phone"
-            value={content.phone || ""}
-            onChange={(e) => handleChange("phone", e.target.value)}
+            value={content.phone || ''}
+            onChange={(e) => handleChange('phone', e.target.value)}
           />
         </div>
       </div>
@@ -108,8 +108,8 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
         <Label htmlFor="location">Location</Label>
         <Input
           id="location"
-          value={content.location || ""}
-          onChange={(e) => handleChange("location", e.target.value)}
+          value={content.location || ''}
+          onChange={(e) => handleChange('location', e.target.value)}
         />
       </div>
 
@@ -117,8 +117,8 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
         <Label htmlFor="website">Website</Label>
         <Input
           id="website"
-          value={content.website || ""}
-          onChange={(e) => handleChange("website", e.target.value)}
+          value={content.website || ''}
+          onChange={(e) => handleChange('website', e.target.value)}
         />
       </div>
 
@@ -127,23 +127,23 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
         <div className="grid grid-cols-2 gap-4">
           <Input
             placeholder="LinkedIn"
-            value={content.socialLinks?.linkedin || ""}
-            onChange={(e) => handleSocialLinkChange("linkedin", e.target.value)}
+            value={content.socialLinks?.linkedin || ''}
+            onChange={(e) => handleSocialLinkChange('linkedin', e.target.value)}
           />
           <Input
             placeholder="GitHub"
-            value={content.socialLinks?.github || ""}
-            onChange={(e) => handleSocialLinkChange("github", e.target.value)}
+            value={content.socialLinks?.github || ''}
+            onChange={(e) => handleSocialLinkChange('github', e.target.value)}
           />
           <Input
             placeholder="Twitter"
-            value={content.socialLinks?.twitter || ""}
-            onChange={(e) => handleSocialLinkChange("twitter", e.target.value)}
+            value={content.socialLinks?.twitter || ''}
+            onChange={(e) => handleSocialLinkChange('twitter', e.target.value)}
           />
         </div>
       </div>
 
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label htmlFor="summary">Professional Summary</Label>
         <Textarea
           id="summary"
@@ -151,7 +151,7 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
           onChange={(e) => handleChange("professionalSummary", e.target.value)}
           rows={4}
         />
-      </div>
+      </div> */}
     </div>
   );
 }
