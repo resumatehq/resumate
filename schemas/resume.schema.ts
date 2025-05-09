@@ -66,7 +66,9 @@ export interface ICertificationContent extends ISectionContent {
   name: string;
   issuingOrganization: string;
   issueDate: string;
+  expiryDate?: string;
   credentialUrl?: string;
+  credentialId?: string;
   description?: string;
 }
 
@@ -77,9 +79,50 @@ export interface IAwardContent extends ISectionContent {
   description?: string;
 }
 
-export interface ICustomSectionContent extends ISectionContent {
+export interface IPublicationContent extends ISectionContent {
   title: string;
-  content: string | Record<string, any>;
+  publisher: string;
+  publicationDate: string;
+  authors?: string[];
+  url?: string;
+  description?: string;
+}
+
+export interface ILanguageContent extends ISectionContent {
+  language: string;
+  proficiency: string;
+  certifications?: string[];
+}
+
+export interface IInterestsContent extends ISectionContent {
+  professional?: string[];
+  personal?: string[];
+}
+
+export interface IVolunteerContent extends ISectionContent {
+  organization: string;
+  role: string;
+  startDate?: string;
+  endDate?: string | null;
+  location?: string;
+  description?: string;
+  achievements?: string[];
+}
+
+export interface ICustomSectionContent extends ISectionContent {
+  sections?: Array<{
+    title: string;
+    items: Array<string | {
+      title?: string;
+      event?: string;
+      topic?: string;
+      date?: string;
+      patentNumber?: string;
+      status?: string;
+      filingDate?: string;
+      [key: string]: any;
+    }>;
+  }>;
 }
 
 export interface IResumeSection {

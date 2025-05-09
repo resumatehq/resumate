@@ -32,11 +32,20 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   const [activeTab, setActiveTab] = useState("edit");
 
   // Debug logs
-  console.log("initialResume in ResumeBuilder:", initialResume);
-  console.log("resume state in ResumeBuilder:", resume);
+  console.log(
+    "initialResume in ResumeBuilder:",
+    JSON.stringify(initialResume, null, 2)
+  );
+  console.log(
+    "resume state in ResumeBuilder:",
+    JSON.stringify(resume, null, 2)
+  );
 
   useEffect(() => {
-    console.log("useEffect triggered with initialResume:", initialResume);
+    console.log(
+      "useEffect triggered with initialResume:",
+      initialResume ? "exists" : "undefined"
+    );
     if (initialResume) {
       console.log("Setting resume with initialResume");
       setResume(initialResume);
@@ -45,7 +54,10 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
 
   // Check if resume exists and has sections
   if (!resume || !Array.isArray(resume.sections)) {
-    console.log("Showing loading state. Resume:", resume);
+    console.log(
+      "Showing loading state. Resume:",
+      resume ? JSON.stringify(resume, null, 2) : "null"
+    );
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">

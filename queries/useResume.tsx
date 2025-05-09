@@ -25,6 +25,15 @@ interface ResumesResponse {
   };
 }
 
+// Define a type for the direct API response
+interface DirectResumeResponse {
+  message: string;
+  status: number;
+  data: {
+    resume: IResume;
+  };
+}
+
 export const useGetResumesQuery = () => {
   return useQuery({
     queryKey: ["resumes"],
@@ -39,13 +48,18 @@ export const useGetResumeByIdQuery = (resumeId: string) => {
       const response = await resumeApiRequest.getResumeById(resumeId);
       console.log("API Response:", response); // Debug log
 
-      // Giờ response.payload sẽ là dữ liệu trực tiếp từ backend
-      // Kiểm tra cấu trúc và trích xuất dữ liệu resume
+      // Handle the new API response structure
+      // Check for the new structure format first
       if (response?.payload?.data?.resume) {
         return response.payload.data.resume;
       }
 
-      // Fallback to empty resume to avoid undefined
+      // If the response is directly from the backend without the payload wrapper
+      if ((response as unknown as DirectResumeResponse)?.data?.resume) {
+        return (response as unknown as DirectResumeResponse).data.resume;
+      }
+
+      // Return empty resume if no data found
       return {
         userId: "",
         title: "",

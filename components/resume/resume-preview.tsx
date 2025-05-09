@@ -8,6 +8,13 @@ import {
   IEducationContent,
   ISkillContent,
   IProjectContent,
+  IAwardContent,
+  ICertificationContent,
+  IPublicationContent,
+  ILanguageContent,
+  IInterestsContent,
+  IVolunteerContent,
+  ICustomSectionContent,
 } from "@/schemas/resume.schema";
 
 interface ResumePreviewProps {
@@ -401,6 +408,359 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
                       className="text-sm text-blue-600 hover:underline"
                     >
                       Project Link
+                    </a>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+
+      case "awards":
+        // Ensure awards content is an array
+        const awardsContent = Array.isArray(section.content)
+          ? (section.content as IAwardContent[])
+          : ([] as IAwardContent[]);
+
+        return (
+          <div className="space-y-4">
+            {awardsContent.map((award, i) => (
+              <div key={i} className="mb-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold">
+                      {award.title || "Award Title"}
+                    </h3>
+                    <h4 className="text-gray-700">
+                      {award.issuingOrganization || "Organization"}
+                    </h4>
+                  </div>
+                  <div className="text-right text-gray-600 text-sm">
+                    {award.dateReceived || "Date"}
+                  </div>
+                </div>
+                {award.description && (
+                  <p className="mt-2 text-gray-700">
+                    {getSafeContent(award.description)}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+
+      case "publications":
+        // Ensure publications content is an array
+        const publicationsContent = Array.isArray(section.content)
+          ? (section.content as IPublicationContent[])
+          : ([] as IPublicationContent[]);
+
+        return (
+          <div className="space-y-4">
+            {publicationsContent.map((publication, i) => (
+              <div key={i} className="mb-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold">
+                      {publication.title || "Publication Title"}
+                    </h3>
+                    <h4 className="text-gray-700">
+                      {publication.publisher || "Publisher"}
+                    </h4>
+                    {publication.authors &&
+                      Array.isArray(publication.authors) && (
+                        <p className="text-sm text-gray-600">
+                          Authors: {publication.authors.join(", ")}
+                        </p>
+                      )}
+                  </div>
+                  <div className="text-right text-gray-600 text-sm">
+                    {publication.publicationDate || "Date"}
+                  </div>
+                </div>
+                {publication.description && (
+                  <p className="mt-2 text-gray-700">
+                    {getSafeContent(publication.description)}
+                  </p>
+                )}
+                {publication.url && (
+                  <div className="mt-1">
+                    <a
+                      href={publication.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      Publication Link
+                    </a>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+
+      case "languages":
+        // Ensure languages content is an array
+        const languagesContent = Array.isArray(section.content)
+          ? (section.content as ILanguageContent[])
+          : ([] as ILanguageContent[]);
+
+        return (
+          <div className="space-y-2">
+            {languagesContent.map((language, i) => (
+              <div key={i} className="flex justify-between items-center py-2">
+                <div>
+                  <span className="font-medium">
+                    {language.language || "Language"}
+                  </span>
+                </div>
+                <div className="text-gray-600">
+                  {language.proficiency || "Proficiency"}
+                </div>
+                {language.certifications &&
+                  Array.isArray(language.certifications) &&
+                  language.certifications.length > 0 && (
+                    <div className="text-sm text-gray-500">
+                      {language.certifications.join(", ")}
+                    </div>
+                  )}
+              </div>
+            ))}
+          </div>
+        );
+
+      case "interests":
+        // Get interests content
+        let interestsContent: IInterestsContent;
+        if (Array.isArray(section.content) && section.content.length > 0) {
+          interestsContent = section.content[0] as IInterestsContent;
+        } else if (
+          typeof section.content === "object" &&
+          section.content !== null
+        ) {
+          interestsContent = section.content as unknown as IInterestsContent;
+        } else {
+          interestsContent = {} as IInterestsContent;
+        }
+
+        const professionalInterests = Array.isArray(
+          interestsContent.professional
+        )
+          ? interestsContent.professional
+          : [];
+
+        const personalInterests = Array.isArray(interestsContent.personal)
+          ? interestsContent.personal
+          : [];
+
+        return (
+          <div className="space-y-4">
+            {professionalInterests.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2">Professional Interests</h3>
+                <div className="flex flex-wrap gap-2">
+                  {professionalInterests.map((interest, i) => (
+                    <span
+                      key={i}
+                      className="bg-gray-100 px-2 py-1 rounded text-sm"
+                    >
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {personalInterests.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2">Personal Interests</h3>
+                <div className="flex flex-wrap gap-2">
+                  {personalInterests.map((interest, i) => (
+                    <span
+                      key={i}
+                      className="bg-gray-100 px-2 py-1 rounded text-sm"
+                    >
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case "volunteer":
+        // Ensure volunteer content is an array
+        const volunteerContent = Array.isArray(section.content)
+          ? (section.content as IVolunteerContent[])
+          : ([] as IVolunteerContent[]);
+
+        return (
+          <div className="space-y-4">
+            {volunteerContent.map((volunteer, i) => (
+              <div key={i} className="mb-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold">
+                      {volunteer.organization || "Organization"}
+                    </h3>
+                    <h4 className="text-gray-700">
+                      {volunteer.role || "Role"}
+                    </h4>
+                  </div>
+                  <div className="text-right text-gray-600 text-sm">
+                    <div>{volunteer.location || ""}</div>
+                    <div>
+                      {volunteer.startDate || "Start Date"} -{" "}
+                      {volunteer.endDate || "Present"}
+                    </div>
+                  </div>
+                </div>
+                {volunteer.description && (
+                  <p className="mt-2 text-gray-700">
+                    {getSafeContent(volunteer.description)}
+                  </p>
+                )}
+                {volunteer.achievements &&
+                  Array.isArray(volunteer.achievements) &&
+                  volunteer.achievements.length > 0 && (
+                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                      {volunteer.achievements.map((achievement, j) => (
+                        <li key={j}>{getSafeContent(achievement)}</li>
+                      ))}
+                    </ul>
+                  )}
+              </div>
+            ))}
+          </div>
+        );
+
+      case "custom":
+        // Handle custom section content
+        let customContent: ICustomSectionContent;
+        if (Array.isArray(section.content) && section.content.length > 0) {
+          customContent = section.content[0] as ICustomSectionContent;
+        } else if (
+          typeof section.content === "object" &&
+          section.content !== null
+        ) {
+          customContent = section.content as unknown as ICustomSectionContent;
+        } else {
+          customContent = {} as ICustomSectionContent;
+        }
+
+        // Handle sections array if it exists
+        if (customContent.sections && Array.isArray(customContent.sections)) {
+          return (
+            <div className="space-y-6">
+              {customContent.sections.map((subsection, i) => (
+                <div key={i} className="mb-4">
+                  <h3 className="font-semibold mb-2">
+                    {subsection.title || "Section"}
+                  </h3>
+
+                  {Array.isArray(subsection.items) && (
+                    <div className="space-y-2">
+                      {subsection.items.map(
+                        (item: string | Record<string, any>, j: number) => (
+                          <div key={j} className="text-gray-700">
+                            {typeof item === "string" ? (
+                              <div>{item}</div>
+                            ) : (
+                              <div className="mb-2">
+                                {item.title && (
+                                  <div className="font-medium">
+                                    {item.title}
+                                  </div>
+                                )}
+                                {item.event && (
+                                  <div className="font-medium">
+                                    {item.event}
+                                  </div>
+                                )}
+                                {item.topic && <div>{item.topic}</div>}
+                                {item.date && (
+                                  <div className="text-sm text-gray-600">
+                                    {item.date}
+                                  </div>
+                                )}
+                                {item.patentNumber && (
+                                  <div className="text-sm">
+                                    Patent: {item.patentNumber} (
+                                    {item.status || "Filed"})
+                                  </div>
+                                )}
+                                {item.filingDate && (
+                                  <div className="text-sm text-gray-600">
+                                    Filed: {item.filingDate}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          );
+        }
+
+        // Fallback for other custom content formats
+        return (
+          <div className="text-gray-700">
+            {typeof customContent === "string"
+              ? customContent
+              : "Custom section content"}
+          </div>
+        );
+
+      case "certifications":
+        // Ensure certifications content is an array
+        const certificationsContent = Array.isArray(section.content)
+          ? (section.content as ICertificationContent[])
+          : ([] as ICertificationContent[]);
+
+        return (
+          <div className="space-y-4">
+            {certificationsContent.map((cert, i) => (
+              <div key={i} className="mb-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold">
+                      {cert.name || "Certification"}
+                    </h3>
+                    <h4 className="text-gray-700">
+                      {cert.issuingOrganization || "Organization"}
+                    </h4>
+                    {cert.credentialId && (
+                      <p className="text-sm text-gray-600">
+                        Credential ID: {cert.credentialId}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right text-gray-600 text-sm">
+                    <div>Issued: {cert.issueDate || "Date"}</div>
+                    {cert.expiryDate && <div>Expires: {cert.expiryDate}</div>}
+                  </div>
+                </div>
+                {cert.description && (
+                  <p className="mt-2 text-gray-700">
+                    {getSafeContent(cert.description)}
+                  </p>
+                )}
+                {cert.credentialUrl && (
+                  <div className="mt-1">
+                    <a
+                      href={cert.credentialUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      Verify Credential
                     </a>
                   </div>
                 )}
