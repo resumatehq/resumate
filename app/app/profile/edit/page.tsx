@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,6 +20,7 @@ import accountApiRequest from '@/apiRequest/account.api';
 import { useRouter } from 'next/navigation';
 import { useGetMeMutation } from '@/queries/useAccount';
 import Cookies from 'js-cookie';
+import { UserContext } from '@/context/profileContext';
 
 // Define the form schema based on AccountSchema
 const profileFormSchema = z.object({
@@ -47,6 +48,7 @@ export default function ProfileEditPage() {
   const { toast } = useToast();
   const router = useRouter();
   const me = useGetMeMutation();
+  const { setUser } = useContext(UserContext) ?? { setUser: () => {} };
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -67,6 +69,14 @@ export default function ProfileEditPage() {
     },
   });
 
+  const formatDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Fetch current profile data when component mounts
   useEffect(() => {
     const fetchProfile = async () => {
@@ -76,7 +86,9 @@ export default function ProfileEditPage() {
           const userData = response.payload.data;
           form.reset({
             username: userData.username || '',
-            date_of_birth: userData.date_of_birth || '',
+            date_of_birth: userData.date_of_birth
+              ? formatDate(userData.date_of_birth)
+              : '',
             bio: userData.bio || '',
             industry: userData.industry || '',
             experience: userData.experience || '',
@@ -107,10 +119,6 @@ export default function ProfileEditPage() {
       setIsLoading(true);
       const token = localStorage.getItem('access_token');
 
-      // Log chi tiết dữ liệu form
-      console.log('Raw form data:', data);
-
-      // Tạo object request với format phù hợp
       const requestData = {
         username: data.username,
         date_of_birth: data.date_of_birth,
@@ -129,29 +137,31 @@ export default function ProfileEditPage() {
           : null,
       };
 
-      console.log('Request data to be sent:', requestData);
       try {
         if (!token) {
           throw new Error('No access token found');
         }
-        const response = await accountApiRequest.updateMe(requestData, token);
-        console.log('API Response:', response);
+        const response = (await accountApiRequest.updateMe(
+          requestData,
+          token
+        )) as { payload: { data: any } };
+
+        // Cập nhật state user với dữ liệu mới
+        setUser(response.payload.data);
 
         toast({
           title: 'Success',
           description: 'Profile updated successfully',
         });
 
-        router.push('/app/profile');
+        router.replace('/app/profile');
       } catch (apiError: any) {
-        // Log chi tiết lỗi từ API
         console.error('API Error details:', {
           status: apiError.status,
           payload: apiError.payload,
           message: apiError.message,
         });
 
-        // Hiển thị thông báo lỗi chi tiết hơn
         toast({
           title: 'Error',
           description: apiError.payload?.message || 'Failed to update profile',
