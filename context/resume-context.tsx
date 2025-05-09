@@ -1,218 +1,156 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
+import { IResume, IResumeSection, SectionType } from "@/schemas/resume.schema";
+import { v4 as uuidv4 } from "uuid";
 
-// Update the ResumeData interface to include projects, certifications, and awards
-export interface ResumeData {
-  personal: {
-    fullName: string;
-    jobTitle: string;
-    email: string;
-    phone: string;
-    location: string;
-    website: string;
-    linkedin: string;
-    summary: string;
-  };
-  experience: Array<{
-    id: string;
-    company: string;
-    position: string;
-    location: string;
-    startDate: string;
-    endDate: string;
-    current: boolean;
-    description: string;
-  }>;
-  education: Array<{
-    id: string;
-    institution: string;
-    degree: string;
-    fieldOfStudy: string;
-    location: string;
-    startDate: string;
-    endDate: string;
-    description: string;
-  }>;
-  skills: {
-    technical: string[];
-    soft: string[];
-    languages: string[];
-  };
-  projects: Array<{
-    id: string;
-    title: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-    current: boolean;
-    url: string;
-    technologies: string[];
-  }>;
-  certifications: Array<{
-    id: string;
-    name: string;
-    issuer: string;
-    date: string;
-    url: string;
-    description: string;
-  }>;
-  awards: Array<{
-    id: string;
-    title: string;
-    issuer: string;
-    date: string;
-    description: string;
-  }>;
-}
-
-// Update the ResumeContextType to include methods for the new sections
 interface ResumeContextType {
-  resumeData: ResumeData;
-  updatePersonalInfo: (data: Partial<ResumeData["personal"]>) => void;
-  updateExperience: (experiences: ResumeData["experience"]) => void;
-  updateEducation: (education: ResumeData["education"]) => void;
-  updateSkills: (
-    category: keyof ResumeData["skills"],
-    skills: string[]
+  resume: IResume | null;
+  setResume: (resume: IResume) => void;
+  updateSection: (sectionId: string, section: Partial<IResumeSection>) => void;
+  addSection: (type: SectionType) => void;
+  removeSection: (sectionId: string) => void;
+  updateSectionContent: (sectionId: string, content: any[]) => void;
+  updateSectionOrder: (sectionId: string, newOrder: number) => void;
+  updateSectionVisibility: (sectionId: string, enabled: boolean) => void;
+  updateSectionSettings: (
+    sectionId: string,
+    settings: Partial<IResumeSection["settings"]>
   ) => void;
-  updateProjects: (projects: ResumeData["projects"]) => void;
-  updateCertifications: (certifications: ResumeData["certifications"]) => void;
-  updateAwards: (awards: ResumeData["awards"]) => void;
 }
-
-// Update the initialResumeData to include the new sections
-const initialResumeData: ResumeData = {
-  personal: {
-    fullName: "",
-    jobTitle: "",
-    email: "",
-    phone: "",
-    location: "",
-    website: "",
-    linkedin: "",
-    summary: "",
-  },
-  experience: [
-    {
-      id: "1",
-      company: "",
-      position: "",
-      location: "",
-      startDate: "",
-      endDate: "",
-      current: false,
-      description: "",
-    },
-  ],
-  education: [
-    {
-      id: "1",
-      institution: "",
-      degree: "",
-      fieldOfStudy: "",
-      location: "",
-      startDate: "",
-      endDate: "",
-      description: "",
-    },
-  ],
-  skills: {
-    technical: [],
-    soft: [],
-    languages: [],
-  },
-  projects: [],
-  certifications: [],
-  awards: [],
-};
 
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
-// Update the ResumeProvider to include methods for the new sections
-export function ResumeProvider({
-  children,
-  initialData,
-}: {
-  children: ReactNode;
-  initialData?: Partial<ResumeData> | null;
-}) {
-  const [resumeData, setResumeData] = useState<ResumeData>({
-    ...initialResumeData,
-    ...(initialData || {}),
-  });
+export function ResumeProvider({ children }: { children: React.ReactNode }) {
+  const [resume, setResume] = useState<IResume | null>(null);
 
-  const updatePersonalInfo = (data: Partial<ResumeData["personal"]>) => {
-    setResumeData((prev) => ({
-      ...prev,
-      personal: {
-        ...prev.personal,
-        ...data,
-      },
-    }));
-  };
+  const updateSection = useCallback(
+    (sectionId: string, section: Partial<IResumeSection>) => {
+      setResume((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          sections: prev.sections.map((s) =>
+            s._id === sectionId ? { ...s, ...section } : s
+          ),
+        };
+      });
+    },
+    []
+  );
 
-  const updateExperience = (experiences: ResumeData["experience"]) => {
-    setResumeData((prev) => ({
-      ...prev,
-      experience: experiences,
-    }));
-  };
+  const addSection = useCallback((type: SectionType) => {
+    setResume((prev) => {
+      if (!prev) return null;
+      const newSection: IResumeSection = {
+        _id: uuidv4(),
+        type,
+        title: type.charAt(0).toUpperCase() + type.slice(1),
+        enabled: true,
+        order: prev.sections.length,
+        content: [],
+        settings: {
+          visibility: "public",
+          layout: "standard",
+          styling: {},
+        },
+      };
+      return {
+        ...prev,
+        sections: [...prev.sections, newSection],
+      };
+    });
+  }, []);
 
-  const updateEducation = (education: ResumeData["education"]) => {
-    setResumeData((prev) => ({
-      ...prev,
-      education: education,
-    }));
-  };
+  const removeSection = useCallback((sectionId: string) => {
+    setResume((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        sections: prev.sections.filter((s) => s._id !== sectionId),
+      };
+    });
+  }, []);
 
-  const updateSkills = (
-    category: keyof ResumeData["skills"],
-    skills: string[]
-  ) => {
-    setResumeData((prev) => ({
-      ...prev,
-      skills: {
-        ...prev.skills,
-        [category]: skills,
-      },
-    }));
-  };
+  const updateSectionContent = useCallback(
+    (sectionId: string, content: any[]) => {
+      setResume((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          sections: prev.sections.map((s) =>
+            s._id === sectionId ? { ...s, content } : s
+          ),
+        };
+      });
+    },
+    []
+  );
 
-  const updateProjects = (projects: ResumeData["projects"]) => {
-    setResumeData((prev) => ({
-      ...prev,
-      projects: projects,
-    }));
-  };
+  const updateSectionOrder = useCallback(
+    (sectionId: string, newOrder: number) => {
+      setResume((prev) => {
+        if (!prev) return null;
+        const sections = [...prev.sections];
+        const sectionIndex = sections.findIndex((s) => s._id === sectionId);
+        if (sectionIndex === -1) return prev;
 
-  const updateCertifications = (
-    certifications: ResumeData["certifications"]
-  ) => {
-    setResumeData((prev) => ({
-      ...prev,
-      certifications: certifications,
-    }));
-  };
+        const [section] = sections.splice(sectionIndex, 1);
+        sections.splice(newOrder, 0, section);
 
-  const updateAwards = (awards: ResumeData["awards"]) => {
-    setResumeData((prev) => ({
-      ...prev,
-      awards: awards,
-    }));
-  };
+        return {
+          ...prev,
+          sections: sections.map((s, index) => ({ ...s, order: index })),
+        };
+      });
+    },
+    []
+  );
+
+  const updateSectionVisibility = useCallback(
+    (sectionId: string, enabled: boolean) => {
+      setResume((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          sections: prev.sections.map((s) =>
+            s._id === sectionId ? { ...s, enabled } : s
+          ),
+        };
+      });
+    },
+    []
+  );
+
+  const updateSectionSettings = useCallback(
+    (sectionId: string, settings: Partial<IResumeSection["settings"]>) => {
+      setResume((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          sections: prev.sections.map((s) =>
+            s._id === sectionId
+              ? { ...s, settings: { ...s.settings, ...settings } }
+              : s
+          ),
+        };
+      });
+    },
+    []
+  );
 
   return (
     <ResumeContext.Provider
       value={{
-        resumeData,
-        updatePersonalInfo,
-        updateExperience,
-        updateEducation,
-        updateSkills,
-        updateProjects,
-        updateCertifications,
-        updateAwards,
+        resume,
+        setResume,
+        updateSection,
+        addSection,
+        removeSection,
+        updateSectionContent,
+        updateSectionOrder,
+        updateSectionVisibility,
+        updateSectionSettings,
       }}
     >
       {children}
@@ -220,10 +158,10 @@ export function ResumeProvider({
   );
 }
 
-export function useResumeContext() {
+export function useResume() {
   const context = useContext(ResumeContext);
   if (context === undefined) {
-    throw new Error("useResumeContext must be used within a ResumeProvider");
+    throw new Error("useResume must be used within a ResumeProvider");
   }
   return context;
 }

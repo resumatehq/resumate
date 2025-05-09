@@ -19,7 +19,7 @@ import {
   useGetResumesQuery,
   useDeleteResumeMutation,
 } from "@/queries/useResume";
-import { ResumeType } from "@/schemas/resume.schema";
+import { IResume } from "@/schemas/resume.schema";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -123,7 +123,7 @@ function ResumeCard({
   resume,
   onDelete,
 }: {
-  resume: ResumeType;
+  resume: IResume;
   onDelete: (id: string) => void;
 }) {
   const { _id, title, targetPosition, industry, metadata } = resume;

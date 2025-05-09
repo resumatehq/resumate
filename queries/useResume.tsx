@@ -1,6 +1,6 @@
 import resumeApiRequest from "@/apiRequest/resume.api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ResumeType, ResumeResponse } from "@/schemas/resume.schema";
+import { IResume, ResumeResponse } from "@/schemas/resume.schema";
 
 interface ResumesResponse {
   message: string;
@@ -37,7 +37,42 @@ export const useGetResumeByIdQuery = (resumeId: string) => {
     queryKey: ["resume", resumeId],
     queryFn: async () => {
       const response = await resumeApiRequest.getResumeById(resumeId);
-      return response.payload;
+      console.log("API Response:", response); // Debug log
+
+      // Extract the deeply nested resume data
+      if (response?.payload?.data?.resume?.data?.resume) {
+        return response.payload.data.resume.data.resume;
+      }
+
+      // Fallback to empty resume to avoid undefined
+      return {
+        userId: "",
+        title: "",
+        templateId: "",
+        language: "en",
+        sections: [],
+        metadata: {
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          currentVersion: 1,
+          isPublished: false,
+          viewCount: 0,
+          downloadCount: 0,
+          sharingOptions: {
+            allowDownload: false,
+            allowFeedback: false,
+          },
+        },
+        keywords: [],
+        aiSuggestions: [],
+        analytics: {
+          modificationCount: 0,
+          exportHistory: [],
+          shareViews: [],
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
     },
     enabled: !!resumeId,
   });
