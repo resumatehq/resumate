@@ -38,7 +38,7 @@ export function middleware(request: NextRequest) {
       if (decodedRefreshToken && decodedRefreshToken.exp <= now) {
         // Nếu cả access token và refresh token đều hết hạn
         // Chuyển hướng về trang login
-        const redirectUrl = new URL('auth/login', request.url);
+        const redirectUrl = new URL('/auth/login', request.url);
         return NextResponse.redirect(redirectUrl);
       }
 
@@ -49,8 +49,8 @@ export function middleware(request: NextRequest) {
 
     // 3. Nếu access token còn hạn
     // Cho phép truy cập tiếp tục
-    // Nếu người dùng cố truy cập vào trang login hoặc trang chủ, chuyển hướng về trang dashboard
-    if (pathname === 'auth/login') {
+    // Nếu người dùng cố truy cập vào trang login hoặc sign-up hoặc trang chủ, chuyển hướng về trang dashboard
+    if (pathname === '/auth/login' || pathname === '/auth/sign-up') {
       const redirectUrl = new URL('/app', request.url);
       return NextResponse.redirect(redirectUrl);
     }
@@ -63,5 +63,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/app', '/auth/login', '/refresh-token'],
+  matcher: ['/', '/app', '/auth/login', '/auth/sign-up', '/refresh-token'],
 };
