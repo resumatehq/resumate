@@ -47,7 +47,7 @@ const authApiRequest = {
       return this.refreshTokenRequest;
     }
     this.refreshTokenRequest = http
-      .post<RefreshTokenResType>('auth/refresh-token', body, {
+      .post<RefreshTokenResType>('api/auth/refresh-token', body, {
         baseUrl: '',
       })
       .then((response) => {

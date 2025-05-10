@@ -1,5 +1,5 @@
-"use client";
-import { Skeleton } from "@/components/ui/skeleton";
+'use client';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Edit,
   Target,
@@ -7,12 +7,12 @@ import {
   FileText,
   Plus,
   MoreHorizontal,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
-import { useEffect, useState } from "react";
-import NewResume from "./newResume";
-import { useGetResumesQuery } from "@/queries/useResume";
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { formatDate } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import NewResume from './newResume';
+import { useGetResumesQuery } from '@/queries/useResume';
 
 // Interface phù hợp với cấu trúc API trả về
 interface ResumeItem {
@@ -34,7 +34,7 @@ export default function ResumeList() {
 
   // Debug log toàn bộ apiResponse
   useEffect(() => {
-    console.log("Full API Response Object:", apiResponse);
+    console.log('Full API Response Object:', apiResponse);
   }, [apiResponse]);
 
   useEffect(() => {
@@ -42,36 +42,36 @@ export default function ResumeList() {
     const response = apiResponse as any;
     if (response) {
       // Debug log chi tiết cấu trúc response
-      console.log("Keys in API Response:", Object.keys(response));
+      console.log('Keys in API Response:', Object.keys(response));
 
       if (response.data?.resumes) {
-        console.log("Found resumes at response.data.resumes");
+        console.log('Found resumes at response.data.resumes');
         setResumes(response.data.resumes);
       } else if (Array.isArray(response.payload)) {
-        console.log("Found resumes at response.payload (array)");
+        console.log('Found resumes at response.payload (array)');
         setResumes(response.payload);
       } else if (response.payload?.data?.resumes) {
-        console.log("Found resumes at response.payload.data.resumes");
+        console.log('Found resumes at response.payload.data.resumes');
         setResumes(response.payload.data.resumes);
       } else {
         // Thử những cấu trúc khác có thể
         if (Array.isArray(response)) {
-          console.log("Response is directly an array");
+          console.log('Response is directly an array');
           setResumes(response);
-        } else if (typeof response === "object" && response !== null) {
-          console.log("Response structure check for resumes property:");
-          if ("resumes" in response) {
-            console.log("- Found direct resumes property");
+        } else if (typeof response === 'object' && response !== null) {
+          console.log('Response structure check for resumes property:');
+          if ('resumes' in response) {
+            console.log('- Found direct resumes property');
             setResumes(response.resumes);
           } else if (response.data?.resumes) {
-            console.log("- Found in data.resumes");
+            console.log('- Found in data.resumes');
             setResumes(response.data.resumes);
           } else {
-            console.error("Unexpected data structure:", response);
+            console.error('Unexpected data structure:', response);
             setResumes([]);
           }
         } else {
-          console.error("Unexpected response type:", typeof response);
+          console.error('Unexpected response type:', typeof response);
           setResumes([]);
         }
       }
@@ -120,7 +120,7 @@ export default function ResumeList() {
             <div className="pl-6">
               <div className="flex items-start mb-1">
                 <h3 className="text-xl font-medium">
-                  {resume.title || "Untitled"}
+                  {resume.title || 'Untitled'}
                 </h3>
                 <Edit className="h-6 w-6 text-gray-400 pl-2 cursor-pointer" />
               </div>

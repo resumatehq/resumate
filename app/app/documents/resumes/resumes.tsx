@@ -1,5 +1,5 @@
-"use client";
-import { Skeleton } from "@/components/ui/skeleton";
+'use client';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Edit,
   Target,
@@ -13,25 +13,26 @@ import {
   Copy,
   Clock,
   Plus,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import {
   useGetResumesQuery,
   useDeleteResumeMutation,
-} from "@/queries/useResume";
-import { IResume } from "@/schemas/resume.schema";
-import { useState } from "react";
+  useUpdateResumeMutation,
+} from '@/queries/useResume';
+import { IResume } from '@/schemas/resume.schema';
+import { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { toast } from "@/hooks/use-toast";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import NewResume from "./newResume";
+} from '@/components/ui/dropdown-menu';
+import { toast } from '@/hooks/use-toast';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import NewResume from './newResume';
 
 interface ResumeListProps {
   onCreateClick?: () => void;
@@ -50,14 +51,14 @@ export default function ResumeList({ onCreateClick }: ResumeListProps) {
     try {
       await deleteResumeMutation.mutateAsync(resumeId);
       toast({
-        title: "Success",
-        description: "Resume deleted successfully",
+        title: 'Success',
+        description: 'Resume deleted successfully',
       });
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error?.payload?.message || "Failed to delete resume",
-        variant: "destructive",
+        title: 'Error',
+        description: error?.payload?.message || 'Failed to delete resume',
+        variant: 'destructive',
       });
     }
   };
@@ -127,16 +128,60 @@ function ResumeCard({
   onDelete: (id: string) => void;
 }) {
   const { _id, title, targetPosition, industry, metadata } = resume;
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleInput, setTitleInput] = useState(title);
+  const updateResumeMutation = useUpdateResumeMutation();
+
   const formattedDate = new Date(metadata.updatedAt).toLocaleDateString(
-    "en-US",
+    'en-US',
     {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     }
   );
 
   const completionPercentage = 75;
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitleInput(e.target.value);
+  };
+
+  const handleTitleSubmit = async () => {
+    if (titleInput.trim() === '') {
+      setTitleInput(title); // Reset to original title if empty
+      setIsEditingTitle(false);
+      return;
+    }
+
+    try {
+      await updateResumeMutation.mutateAsync({
+        resumeId: _id as string,
+        data: { title: titleInput },
+      });
+      toast({
+        title: 'Success',
+        description: 'Resume title updated successfully',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error?.payload?.message || 'Failed to update title',
+        variant: 'destructive',
+      });
+      setTitleInput(title); // Reset to original title on error
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleTitleSubmit();
+    } else if (e.key === 'Escape') {
+      setIsEditingTitle(false);
+      setTitleInput(title);
+    }
+  };
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
@@ -169,10 +214,26 @@ function ResumeCard({
           <div className="flex items-start justify-between mb-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-xl font-medium text-gray-800">{title}</h3>
-                <Link href={`/app/documents/resumes/${_id}/edit`}>
-                  <Edit className="h-4 w-4 text-gray-400 hover:text-blue-500 cursor-pointer" />
-                </Link>
+                {isEditingTitle ? (
+                  <input
+                    type="text"
+                    value={titleInput}
+                    onChange={handleTitleChange}
+                    onBlur={handleTitleSubmit}
+                    onKeyDown={handleTitleKeyDown}
+                    className="text-xl font-medium text-gray-800 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none px-1"
+                    autoFocus
+                  />
+                ) : (
+                  <h3 className="text-xl font-medium text-gray-800">{title}</h3>
+                )}
+                <Edit
+                  className="h-4 w-4 text-gray-400 hover:text-blue-500 cursor-pointer"
+                  onClick={() => {
+                    setIsEditingTitle(true);
+                    setTitleInput(title);
+                  }}
+                />
               </div>
 
               <div className="flex items-center text-gray-500 text-sm mb-1">

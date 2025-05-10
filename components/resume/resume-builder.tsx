@@ -344,6 +344,8 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
     'split'
   );
   const [activeTab, setActiveTab] = useState('edit');
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleInput, setTitleInput] = useState('');
 
   const createResumeMutation = useCreateResumeMutation();
   const updateResumeMutation = useUpdateResumeMutation();
@@ -450,14 +452,55 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
     }
   };
 
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitleInput(e.target.value);
+  };
+
+  const handleTitleSubmit = () => {
+    if (resume) {
+      setResume({
+        ...resume,
+        title: titleInput,
+      });
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleTitleSubmit();
+    } else if (e.key === 'Escape') {
+      setIsEditingTitle(false);
+      setTitleInput(resume?.title || '');
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-800">
-            {resume.title || 'Untitled Resume'}
-          </h1>
+          {isEditingTitle ? (
+            <input
+              type="text"
+              value={titleInput}
+              onChange={handleTitleChange}
+              onBlur={handleTitleSubmit}
+              onKeyDown={handleTitleKeyDown}
+              className="text-2xl font-bold text-gray-800 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none px-1"
+              autoFocus
+            />
+          ) : (
+            <h1
+              className="text-2xl font-bold text-gray-800 cursor-pointer hover:text-blue-600"
+              onClick={() => {
+                setIsEditingTitle(true);
+                setTitleInput(resume?.title || '');
+              }}
+            >
+              {resume?.title || 'Untitled Resume'}
+            </h1>
+          )}
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -509,7 +552,6 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
         </div>
       </header>
 
-      {/* Rest of the component remains unchanged */}
       {/* Main content */}
       <div className="flex-1 overflow-hidden flex">
         {/* Editor area - hidden in full preview mode */}
