@@ -1,6 +1,6 @@
 import resumeApiRequest from '@/apiRequest/resume.api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CreateResumeType } from '@/schemas/resume.schema';
+import { CreateResumeType, UpdateResumeType } from '@/schemas/resume.schema';
 
 interface ResumesResponse {
   message: string;
@@ -96,6 +96,26 @@ export const useCreateResumeMutation = () => {
       resumeApiRequest.createResume(resume),
     onSuccess: () => {
       // Refetch resumes list after create
+      queryClient.invalidateQueries({ queryKey: ['resumes'] });
+    },
+  });
+};
+
+export const useUpdateResumeMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      resumeId,
+      data,
+    }: {
+      resumeId: string;
+      data: UpdateResumeType;
+    }) => resumeApiRequest.updateResume(resumeId, data),
+    onSuccess: (_, variables) => {
+      // Refetch the specific resume and resumes list
+      queryClient.invalidateQueries({
+        queryKey: ['resume', variables.resumeId],
+      });
       queryClient.invalidateQueries({ queryKey: ['resumes'] });
     },
   });

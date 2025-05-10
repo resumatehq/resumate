@@ -19,7 +19,10 @@ import { SectionEditor } from './section-editor';
 import { ResumePreview } from './resume-preview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
-import { useCreateResumeMutation } from '@/queries/useResume';
+import {
+  useCreateResumeMutation,
+  useUpdateResumeMutation,
+} from '@/queries/useResume';
 import { toast } from '@/hooks/use-toast';
 import { CreateResumeType } from '@/schemas/resume.schema';
 import { useRouter } from 'next/navigation';
@@ -36,6 +39,7 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   const [activeTab, setActiveTab] = useState('edit');
 
   const createResumeMutation = useCreateResumeMutation();
+  const updateResumeMutation = useUpdateResumeMutation();
   const router = useRouter();
   // // Debug logs
   // console.log('initialResume in ResumeBuilder:', initialResume);
@@ -106,19 +110,31 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
         industry: resume.industry,
       };
 
-      // Gọi API tạo resume
-      const response = await createResumeMutation.mutateAsync(resumeData);
+      let response;
 
-      // Hiển thị thông báo thành công
-      toast({
-        title: 'Success',
-        description: 'Resume saved successfully',
-      });
-      console.log('thanh cong');
+      // Kiểm tra nếu có _id thì update, không thì create mới
+      if (resume._id) {
+        response = await updateResumeMutation.mutateAsync({
+          resumeId: resume._id,
+          data: resumeData,
+        });
 
-      // Chuyển hướng đến trang edit resume
-      if (response.payload?._id) {
-        router.push(`/app/documents/resumes/${response.payload._id}/edit`);
+        console.log('cap nhat thanh cong');
+        toast({
+          title: 'Success',
+          description: 'Resume updated successfully',
+        });
+      } else {
+        response = await createResumeMutation.mutateAsync(resumeData);
+        toast({
+          title: 'Success',
+          description: 'Resume created successfully',
+        });
+
+        // Chuyển hướng đến trang edit resume chỉ khi tạo mới
+        if (response.payload?._id) {
+          router.push(`/app/documents/resumes/${response.payload._id}/edit`);
+        }
       }
     } catch (error: any) {
       console.error('Error saving resume:', error);
