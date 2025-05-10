@@ -31,18 +31,25 @@ export default function Oauth() {
       if (count.current === 0) {
         mutateAsync({ access_token, refresh_token })
           .then(() => {
+            console.log("Tokens successfully saved to cookies");
+
             if (userParam && setUser) {
               try {
                 const decodedUserParam = decodeURIComponent(userParam);
                 const userData = JSON.parse(decodedUserParam);
                 setUser(userData);
+                console.log("User data set to context:", userData);
               } catch (error) {
                 console.error("Failed to parse user data", error);
+                toast({
+                  description: "Failed to parse user data",
+                });
               }
             }
             router.push("/app");
           })
           .catch((e) => {
+            console.error("Error setting tokens to cookies:", e);
             toast({
               description: e.message || "Có lỗi xảy ra",
             });
@@ -53,7 +60,7 @@ export default function Oauth() {
       if (count.current === 0) {
         setTimeout(() => {
           toast({
-            description: "Có lỗi xảy ra",
+            description: "Có lỗi xảy ra khi đăng nhập với Google",
           });
         });
         count.current++;
