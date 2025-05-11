@@ -1,184 +1,141 @@
-"use client";
+'use client';
+import { ResumeProvider } from '@/context/resume-context';
+import { ResumeBuilder } from '@/components/resume/resume-builder';
+import type { IResume } from '@/schemas/resume.schema';
 
-import { useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  FileText,
-  Save,
-  Download,
-  Share2,
-  ArrowLeft,
-  Sparkles,
-  Wand2,
-} from "lucide-react";
-import { PersonalInfoForm } from "@/components/resume/personal-info-form";
-import { ExperienceForm } from "@/components/resume/experience-form";
-import { EducationForm } from "@/components/resume/education-form";
-import { SkillsForm } from "@/components/resume/skills-form";
-import { ResumePreview } from "@/components/resume/resume-preview";
-import { AiAssistant } from "@/components/resume/ai-assistant";
-import { TemplateSelector } from "@/components/resume/template-selector";
-import { AtsScanner } from "@/components/resume/ats-scanner";
-import { CertificationsForm } from "@/components/resume/certifications-form";
-import { AwardsForm } from "@/components/resume/awards-form";
-import { ProjectsForm } from "@/components/resume/projects-form";
-
-export default function NewResumePage() {
-  const [activeTab, setActiveTab] = useState("personal");
-  const [showAiAssistant, setShowAiAssistant] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState("professional");
+export default function CreateResumePage() {
+  const initialResume: IResume = {
+    title: 'My Professional Resume',
+    templateId: '6813293e1f84466e61e8e909', // Sử dụng templateId thực tế
+    language: 'en',
+    sections: [
+      {
+        _id: 'personal-' + Date.now(),
+        type: 'personal',
+        title: 'Personal Information',
+        enabled: true,
+        order: 0,
+        content: [
+          {
+            fullName: '',
+            jobTilte: '',
+            email: '',
+            phone: '',
+            location: '',
+            website: '',
+            socialLinks: {},
+          },
+        ],
+        settings: {
+          visibility: 'public',
+          layout: 'standard',
+          styling: {},
+        },
+      },
+      {
+        _id: 'summary-' + Date.now(),
+        type: 'summary',
+        title: 'Professional Summary',
+        enabled: true,
+        order: 1,
+        content: [
+          {
+            professionalSummary: '',
+          },
+        ],
+        settings: {
+          visibility: 'public',
+          layout: 'standard',
+          styling: {},
+        },
+      },
+      {
+        _id: 'experience-' + Date.now(),
+        type: 'experience',
+        title: 'Work Experience',
+        enabled: true,
+        order: 2,
+        content: [],
+        settings: {
+          visibility: 'public',
+          layout: 'standard',
+          styling: {},
+        },
+      },
+      {
+        _id: 'education-' + Date.now(),
+        type: 'education',
+        title: 'Education',
+        enabled: true,
+        order: 3,
+        content: [],
+        settings: {
+          visibility: 'public',
+          layout: 'standard',
+          styling: {},
+        },
+      },
+      {
+        _id: 'skills-' + Date.now(),
+        type: 'skills',
+        title: 'Skills',
+        enabled: true,
+        order: 4,
+        content: [
+          {
+            technical: [],
+            soft: [],
+            languages: [],
+          },
+        ],
+        settings: {
+          visibility: 'public',
+          layout: 'standard',
+          styling: {},
+        },
+      },
+      {
+        _id: 'projects-' + Date.now(),
+        type: 'projects',
+        title: 'Projects',
+        enabled: true,
+        order: 5,
+        content: [],
+        settings: {
+          visibility: 'public',
+          layout: 'standard',
+          styling: {},
+        },
+      },
+    ],
+    metadata: {
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      currentVersion: 1,
+      isPublished: false,
+      sharingOptions: {
+        allowDownload: true,
+        allowFeedback: false,
+      },
+      viewCount: 0,
+      downloadCount: 0,
+    },
+    keywords: [],
+    aiSuggestions: [],
+    analytics: {
+      modificationCount: 0,
+      exportHistory: [],
+      shareViews: [],
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <header className="bg-background border-b sticky top-0 z-10">
-        <div className="container mx-auto py-3 px-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Link
-              href="/app/documents/resumes"
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="font-medium">Back to Resumes</span>
-            </Link>
-          </div>
-          <div className="flex items-center gap-2 font-semibold">
-            <FileText className="h-5 w-5 text-primary" />
-            <span>Create New Resume</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1">
-              <Save className="h-4 w-4" /> Save Draft
-            </Button>
-            <Button size="sm" className="gap-1">
-              <Download className="h-4 w-4" /> Export
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto py-4 px-2">
-        <div className="grid lg:grid-cols-2 gap-4">
-          <div>
-            <div className="bg-background rounded-lg shadow-sm p-6 mb-6">
-              <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Build Your Resume</h1>
-                <Button
-                  variant={showAiAssistant ? "default" : "outline"}
-                  onClick={() => setShowAiAssistant(!showAiAssistant)}
-                  className="gap-2"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  AI Assistant
-                </Button>
-              </div>
-
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-8 mb-6">
-                  <TabsTrigger value="personal" className="gap-2">
-                    <span className="hidden sm:inline">Personal</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="experience" className="gap-2">
-                    <span className="hidden sm:inline">Experience</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="education" className="gap-2">
-                    <span className="hidden sm:inline">Education</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="skills" className="gap-2">
-                    <span className="hidden sm:inline">Skills</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="projects" className="gap-2">
-                    <span className="hidden sm:inline">Projects</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="certifications" className="gap-2">
-                    <span className="hidden sm:inline">Certs</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="awards" className="gap-2">
-                    <span className="hidden sm:inline">Awards</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="templates" className="gap-2">
-                    <span className="hidden sm:inline">Templates</span>
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="personal">
-                  <PersonalInfoForm />
-                </TabsContent>
-
-                <TabsContent value="experience">
-                  <ExperienceForm />
-                </TabsContent>
-
-                <TabsContent value="education">
-                  <EducationForm />
-                </TabsContent>
-
-                <TabsContent value="skills">
-                  <SkillsForm />
-                </TabsContent>
-
-                <TabsContent value="projects">
-                  <ProjectsForm />
-                </TabsContent>
-
-                <TabsContent value="certifications">
-                  <CertificationsForm />
-                </TabsContent>
-
-                <TabsContent value="awards">
-                  <AwardsForm />
-                </TabsContent>
-
-                <TabsContent value="templates">
-                  <TemplateSelector
-                    selectedTemplate={selectedTemplate}
-                    onSelectTemplate={setSelectedTemplate}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
-
-            {showAiAssistant && (
-              <Card className="mb-6">
-                <CardContent className="p-6">
-                  <AiAssistant />
-                </CardContent>
-              </Card>
-            )}
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Wand2 className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">ATS Optimization</h2>
-                </div>
-                <AtsScanner />
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="sticky top-[73px] self-start">
-            <div className="bg-background rounded-lg shadow-sm p-3">
-              <div className="flex justify-between items-center mb-3">
-                <h2 className="font-semibold">Preview</h2>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className="bg-muted rounded border">
-                <ResumePreview template={selectedTemplate} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+    <ResumeProvider>
+      <div className="min-h-screen bg-gray-50">
+        <ResumeBuilder initialResume={initialResume} />
+      </div>
+    </ResumeProvider>
   );
 }

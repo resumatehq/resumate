@@ -1,9 +1,8 @@
-'use client';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { ThemeProvider } from './theme-provider';
-import { ResumeProvider } from '@/context/resume-context';
-import { UserProvider } from '@/context/profileContext';
-import AppProvider from '@/components/app-provider';
+"use client";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { ThemeProvider } from "./theme-provider";
+import { UserProvider } from "@/context/profileContext";
+import AppProvider from "@/components/app-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -15,9 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <AppProvider>
         <UserProvider>
-          <SidebarProvider>
-            <ResumeProvider>{children}</ResumeProvider>
-          </SidebarProvider>
+          <SidebarProvider>{children}</SidebarProvider>
         </UserProvider>
       </AppProvider>
     </ThemeProvider>

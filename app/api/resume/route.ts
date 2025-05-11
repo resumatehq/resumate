@@ -8,14 +8,11 @@ export async function GET() {
     const access_token = cookieStore.get('access_token')?.value;
 
     if (!access_token) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const response = await resumeApiRequest.sGetResumes(access_token);
-    
+
     return NextResponse.json(response.payload);
   } catch (error: any) {
     console.error('Error fetching resumes:', error);
@@ -33,13 +30,26 @@ export async function POST(request: NextRequest) {
 
     if (!access_token) {
       return NextResponse.json(
-        { message: 'Unauthorized' },
+        { message: 'Unauthorized - Please login to continue' },
         { status: 401 }
       );
     }
 
     const data = await request.json();
+    console.log('Received data:', data);
+
+    // Validate required fields
+    if (!data.title || !data.templateId || !data.sections) {
+      return NextResponse.json(
+        { message: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Gọi API tạo resume
     const response = await resumeApiRequest.sCreateResume(data, access_token);
+    console.log('API response:', response);
+
     return NextResponse.json(response.payload);
   } catch (error: any) {
     console.error('Error creating resume:', error);
@@ -48,4 +58,4 @@ export async function POST(request: NextRequest) {
       { status: error.status || 500 }
     );
   }
-} 
+}
