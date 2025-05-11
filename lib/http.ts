@@ -79,8 +79,8 @@ const request = async <Response>(
     body instanceof FormData
       ? {}
       : {
-          'Content-Type': 'application/json',
-        };
+        'Content-Type': 'application/json',
+      };
 
   const access_token = isClient
     ? getAccessToken()
