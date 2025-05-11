@@ -19,11 +19,11 @@ const authApiRequest = {
     http.post<SignUpResType>('auth/register', body),
 
   signup: (body: SignUpBodyType) =>
-    http.post<SignUpResType>('auth/register', body),
+    http.post<SignUpResType>('/api/auth/register', body),
 
   sLogin: (body: LoginBodyType) => http.post<LoginResType>('auth/login', body),
 
-  login: (body: LoginBodyType) => http.post<LoginResType>('auth/login', body),
+  login: (body: LoginBodyType) => http.post<LoginResType>('/api/auth/login', body),
 
   sLogout: (
     body: LogoutBodyType & {
@@ -36,10 +36,10 @@ const authApiRequest = {
       },
     }),
 
-  logout: () => http.delete('auth/logout'), // client gọi đến route handler, không cần truyền AT và RT vào body vì AT và RT tự  động gửi thông qua cookie rồi
+  logout: () => http.delete('/api/auth/logout'), // client gọi đến route handler, không cần truyền AT và RT vào body vì AT và RT tự  động gửi thông qua cookie rồi
 
   sRefreshToken: (body: RefreshTokenBodyType) =>
-    http.post<RefreshTokenResType>('auth/refresh-token', body),
+    http.post<RefreshTokenResType>('/api/auth/refresh-token', body),
 
   async refreshToken(body: RefreshTokenBodyType) {
     // Nếu refreshTokenRequest đã tồn tại thì trả về luôn, không gọi request mới
@@ -47,7 +47,7 @@ const authApiRequest = {
       return this.refreshTokenRequest;
     }
     this.refreshTokenRequest = http
-      .post<RefreshTokenResType>('auth/refresh-token', body, {
+      .post<RefreshTokenResType>('/api/auth/refresh-token', body, {
         baseUrl: '',
       })
       .then((response) => {
@@ -62,7 +62,7 @@ const authApiRequest = {
   },
 
   setTokenToCookie: (body: { access_token: string; refresh_token: string }) =>
-    http.post('auth/token', body, { baseUrl: '' }),
+    http.post('/api/auth/token', body, { baseUrl: '' }),
 };
 
 export default authApiRequest;
