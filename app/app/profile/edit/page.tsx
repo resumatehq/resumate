@@ -15,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import accountApiRequest from '@/apiRequest/account.api';
 import { useRouter } from 'next/navigation';
 import { useGetMeMutation } from '@/queries/useAccount';

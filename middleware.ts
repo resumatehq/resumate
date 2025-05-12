@@ -5,63 +5,66 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const access_token = request.cookies.get('access_token');
-  const refresh_token = request.cookies.get('refresh_token');
+  const accessToken = request.cookies.get('access_token')?.value;
+  const refreshToken = request.cookies.get('refresh_token')?.value;
 
-  // 1. Nếu người dùng chưa đăng nhập (không có access token và refresh token)
-  if (!access_token && !refresh_token) {
-    // Nếu họ cố truy cập vào /app, chuyển hướng về trang chủ /auth/login
+  const isAuthenticated = accessToken && refreshToken;
+
+  // 1. Trường hợp người dùng CHƯA đăng nhập
+  if (!isAuthenticated) {
+    // Cho phép truy cập trang landing page và login
+    if (pathname === '/' || pathname === '/auth/login') {
+      return NextResponse.next();
+    }
+
+    // Nếu truy cập /app → redirect về /auth/login
     if (pathname.startsWith('/app')) {
-      const redirectUrl = new URL('/auth/login', request.url);
-      return NextResponse.redirect(redirectUrl);
+      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
-    // Cho phép truy cập tiếp tục nếu ở trang chủ /
-    return NextResponse.next();
+    // Các route khác → cũng redirect về /auth/login
+    return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
-  // 2. Nếu người dùng đã đăng nhập (có access token và refresh token)
-  // Kiểm tra xem access token còn hạn không
-  if (access_token && refresh_token) {
-    const decodedAccessToken = decodeToken(
-      typeof access_token === 'string' ? access_token : access_token?.value
-    );
-    const decodedRefreshToken = decodeToken(
-      typeof refresh_token === 'string' ? refresh_token : refresh_token?.value
-    );
+  // 2. Trường hợp người dùng ĐÃ đăng nhập
+  const decodedAccessToken = decodeToken(accessToken);
+  const decodedRefreshToken = decodeToken(refreshToken);
 
-    const now = Math.round(new Date().getTime() / 1000);
+  const now = Math.floor(Date.now() / 1000);
 
-    // Nếu access token hết hạn
-    if (decodedAccessToken && decodedAccessToken.exp <= now) {
-      // Kiểm tra xem refresh token còn hạn không
-      if (decodedRefreshToken && decodedRefreshToken.exp <= now) {
-        // Nếu cả access token và refresh token đều hết hạn
-        // Chuyển hướng về trang login
-        const redirectUrl = new URL('/auth/login', request.url);
-        return NextResponse.redirect(redirectUrl);
-      }
+  const isAccessTokenExpired =
+    decodedAccessToken?.exp && decodedAccessToken.exp <= now;
+  const isRefreshTokenExpired =
+    decodedRefreshToken?.exp && decodedRefreshToken.exp <= now;
 
-      // Nếu chỉ access token hết hạn, ta có thể gọi API refresh token (hoặc chuyển hướng về trang refresh)
-      const refreshUrl = new URL('/refresh-token', request.url);
-      return NextResponse.redirect(refreshUrl);
-    }
-
-    // 3. Nếu access token còn hạn
-    // Cho phép truy cập tiếp tục
-    // Nếu người dùng cố truy cập vào trang login hoặc trang chủ, chuyển hướng về trang dashboard
-    if (pathname === '/auth/login') {
-      const redirectUrl = new URL('/app', request.url);
-      return NextResponse.redirect(redirectUrl);
-    }
-    // Cho phép truy cập tiếp tục nếu ở trang dashboard
-    return NextResponse.next();
+  // Nếu cả access và refresh token đều hết hạn → xóa cookies và redirect
+  if (isAccessTokenExpired && isRefreshTokenExpired) {
+    const response = NextResponse.redirect(new URL('/auth/login', request.url));
+    response.cookies.set('access_token', '', {
+      path: '/',
+      expires: new Date(0),
+    });
+    response.cookies.set('refresh_token', '', {
+      path: '/',
+      expires: new Date(0),
+    });
+    return response;
   }
 
-  // Cho phép truy cập tiếp tục nếu không phải trường hợp nào ở trên
+  // Nếu chỉ access token hết hạn → chuyển sang route /refresh-token
+  if (isAccessTokenExpired && !isRefreshTokenExpired) {
+    return NextResponse.redirect(new URL('/refresh-token', request.url));
+  }
+
+  // Nếu token còn hạn mà vào landing page hoặc login → redirect về /app
+  if (pathname === '/' || pathname === '/auth/login') {
+    return NextResponse.redirect(new URL('/app', request.url));
+  }
+
+  // Cho phép vào các route khác
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/', '/app', '/auth/login', '/refresh-token'],
+  matcher: ['/', '/app/:path*', '/auth/login', '/refresh-token'],
 };

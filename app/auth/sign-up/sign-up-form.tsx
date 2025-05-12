@@ -1,10 +1,10 @@
-import Logo from "@/components/logo";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { IconFidgetSpinner } from "@tabler/icons-react";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import Logo from '@/components/logo';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { IconFidgetSpinner } from '@tabler/icons-react';
+import Link from 'next/link';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -12,13 +12,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { useState } from "react";
-import { SignUpBody, SignUpBodyType } from "@/schemas/auth.schema";
-import { useSignUpMutation } from "@/queries/useAuth";
-import { toast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { handleErrorApi } from "@/lib/utils";
+} from '@/components/ui/form';
+import { useState } from 'react';
+import { SignUpBody, SignUpBodyType } from '@/schemas/auth.schema';
+import { useSignUpMutation } from '@/queries/useAuth';
+import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { handleErrorApi } from '@/lib/utils';
 
 export default function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -28,11 +28,11 @@ export default function SignUpForm() {
   const form = useForm<SignUpBodyType>({
     resolver: zodResolver(SignUpBody),
     defaultValues: {
-      email: "",
-      username: "",
-      password: "",
-      confirm_password: "",
-      date_of_birth: "",
+      email: '',
+      username: '',
+      password: '',
+      confirm_password: '',
+      date_of_birth: '',
     },
   });
 
@@ -40,15 +40,17 @@ export default function SignUpForm() {
     setIsLoading(true);
     try {
       const res = await signUpMutation.mutateAsync(data);
-      console.log("dang ky thanh cong", res.payload.data);
+      console.log('dang ky thanh cong', res.payload.data);
 
       toast({
-        description: res.payload.message,
+        title: 'Request verification',
+        description: 'Please check your email to verify your account',
+        variant: 'default',
       });
       // router.push('/auth/login');
-      router.push("/");
+      router.push('/');
     } catch (error) {
-      console.log("error", error);
+      console.log('error', error);
       handleErrorApi({ error, setError: form.setError });
     } finally {
       setIsLoading(false);
@@ -103,7 +105,7 @@ export default function SignUpForm() {
                   d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0C79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
                 ></path>
               </svg>
-            )}{" "}
+            )}{' '}
             Google
           </Button>
           <Button
@@ -132,7 +134,7 @@ export default function SignUpForm() {
                   d="M256 256.002H134.335V134.336H256z"
                 ></path>
               </svg>
-            )}{" "}
+            )}{' '}
             Microsoft
           </Button>
         </div>
