@@ -11,9 +11,21 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Send, Copy, CheckCheck } from "lucide-react";
+import {
+  Sparkles,
+  Send,
+  Copy,
+  CheckCheck,
+  Loader2,
+  Lightbulb,
+  FileText,
+  Target,
+  Briefcase,
+  Badge,
+} from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -41,6 +53,7 @@ export function ResumeAIAssistant({ resume }: ResumeAIAssistantProps) {
   const [yearsExperience, setYearsExperience] = useState("0");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState("");
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
   const handleJobDescriptionSuggestions = async () => {
@@ -216,151 +229,345 @@ export function ResumeAIAssistant({ resume }: ResumeAIAssistantProps) {
     setResult("");
   };
 
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(result);
+    setCopied(true);
+    toast({
+      title: "Copied!",
+      description: "Result copied to clipboard",
+    });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const getTabIcon = (tab: string) => {
+    switch (tab) {
+      case "job-descriptions":
+        return <FileText className="h-4 w-4 mr-1.5" />;
+      case "content-quality":
+        return <Lightbulb className="h-4 w-4 mr-1.5" />;
+      case "ats-optimization":
+        return <Target className="h-4 w-4 mr-1.5" />;
+      case "skills-suggestions":
+        return <Badge className="h-4 w-4 mr-1.5" />;
+      case "job-match":
+        return <Briefcase className="h-4 w-4 mr-1.5" />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Resume AI Assistant</CardTitle>
+    <Card className="w-full shadow-md">
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
+        <CardTitle className="flex items-center text-indigo-700">
+          <Sparkles className="h-5 w-5 mr-2 text-indigo-500" />
+          Resume AI Assistant
+        </CardTitle>
         <CardDescription>
           Get AI-powered suggestions to improve your resume
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <Tabs defaultValue="job-descriptions" onValueChange={handleTabChange}>
-          <TabsList className="grid grid-cols-5 mb-4">
-            <TabsTrigger value="job-descriptions">Job Descriptions</TabsTrigger>
-            <TabsTrigger value="content-quality">Content Quality</TabsTrigger>
-            <TabsTrigger value="ats-optimization">ATS Optimization</TabsTrigger>
-            <TabsTrigger value="skills-suggestions">
-              Skills Suggestions
-            </TabsTrigger>
-            <TabsTrigger value="job-match">Job Match</TabsTrigger>
-          </TabsList>
+          <div className="grid grid-cols-1 gap-3 mb-6">
+            {/* First row - 3 tabs */}
+            <TabsList className="rounded-lg grid grid-cols-3 p-1 bg-slate-100">
+              <TabsTrigger value="job-descriptions">
+                {getTabIcon("job-descriptions")}
+                <span className="hidden sm:inline">Job Descriptions</span>
+                <span className="sm:hidden">Jobs</span>
+              </TabsTrigger>
+              <TabsTrigger value="content-quality">
+                {getTabIcon("content-quality")}
+                <span className="hidden sm:inline">Content Quality</span>
+                <span className="sm:hidden">Quality</span>
+              </TabsTrigger>
+              <TabsTrigger value="ats-optimization">
+                {getTabIcon("ats-optimization")}
+                <span className="hidden sm:inline">ATS Optimization</span>
+                <span className="sm:hidden">ATS</span>
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="job-descriptions">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="job-title">Job Title</Label>
-                <Input
-                  id="job-title"
-                  placeholder="e.g. Software Engineer"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                />
-              </div>
-              <Button
-                onClick={handleJobDescriptionSuggestions}
-                disabled={isLoading}
-              >
-                {isLoading
-                  ? "Getting suggestions..."
-                  : "Get Professional Job Description Suggestions"}
-              </Button>
-            </div>
-          </TabsContent>
+            {/* Second row - 2 tabs */}
+            <TabsList className="rounded-lg grid grid-cols-2 p-1 bg-slate-100 mx-auto w-full max-w-[400px]">
+              <TabsTrigger value="skills-suggestions">
+                {getTabIcon("skills-suggestions")}
+                <span className="hidden sm:inline">Skills Suggestions</span>
+                <span className="sm:hidden">Skills</span>
+              </TabsTrigger>
+              <TabsTrigger value="job-match">
+                {getTabIcon("job-match")}
+                <span className="hidden sm:inline">Job Match</span>
+                <span className="sm:hidden">Match</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="content-quality">
-            <div className="space-y-4">
-              <p className="text-sm text-gray-500">
-                Get an assessment of your resume content quality and suggestions
-                for improvement.
-              </p>
-              <Button
-                onClick={handleContentQualityAssessment}
-                disabled={isLoading}
-              >
-                {isLoading ? "Analyzing content..." : "Analyze Content Quality"}
-              </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="ats-optimization">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="job-description">Job Description</Label>
-                <Textarea
-                  id="job-description"
-                  placeholder="Paste the job description here..."
-                  className="h-32"
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                />
-              </div>
-              <div className="flex space-x-2">
-                <Button onClick={handleATSOptimization} disabled={isLoading}>
-                  {isLoading ? "Optimizing..." : "Analyze for ATS"}
-                </Button>
+          <div className="bg-slate-50 p-3 sm:p-6 rounded-lg mb-6">
+            <TabsContent value="job-descriptions">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="job-title" className="text-sm font-medium">
+                    Job Title
+                  </Label>
+                  <Input
+                    id="job-title"
+                    placeholder="e.g. Software Engineer"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
                 <Button
-                  onClick={handleAutoOptimize}
+                  onClick={handleJobDescriptionSuggestions}
                   disabled={isLoading}
-                  variant="default"
+                  className="w-full"
                 >
-                  {isLoading ? "Optimizing..." : "Auto-Optimize Resume"}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <span className="sm:inline hidden">
+                        Getting suggestions...
+                      </span>
+                      <span className="sm:hidden">Loading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      <span className="sm:inline hidden">
+                        Get Professional Job Descriptions
+                      </span>
+                      <span className="sm:hidden">Get Job Descriptions</span>
+                    </>
+                  )}
                 </Button>
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="skills-suggestions">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="industry">Industry</Label>
-                <Input
-                  id="industry"
-                  placeholder="e.g. Software Development"
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                />
+            <TabsContent value="content-quality">
+              <div className="space-y-4">
+                <div className="p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-100">
+                  <p className="text-xs sm:text-sm text-blue-700 flex items-start">
+                    <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-blue-500 flex-shrink-0 mt-0.5" />
+                    Our AI will analyze your resume content quality and provide
+                    specific improvement suggestions to make your resume stand
+                    out.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleContentQualityAssessment}
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <span className="sm:inline hidden">
+                        Analyzing content...
+                      </span>
+                      <span className="sm:hidden">Analyzing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      <span>Analyze Content Quality</span>
+                    </>
+                  )}
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="years-experience">Years of Experience</Label>
-                <Input
-                  id="years-experience"
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 5"
-                  value={yearsExperience}
-                  onChange={(e) => setYearsExperience(e.target.value)}
-                />
-              </div>
-              <Button
-                onClick={handleIndustrySkillSuggestions}
-                disabled={isLoading}
-              >
-                {isLoading
-                  ? "Getting suggestions..."
-                  : "Get Industry Skills Suggestions"}
-              </Button>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="job-match">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="job-match-description">Job Description</Label>
-                <Textarea
-                  id="job-match-description"
-                  placeholder="Paste the job description here..."
-                  className="h-32"
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                />
+            <TabsContent value="ats-optimization">
+              <div className="space-y-4">
+                <div>
+                  <Label
+                    htmlFor="job-description"
+                    className="text-sm font-medium"
+                  >
+                    Job Description
+                  </Label>
+                  <Textarea
+                    id="job-description"
+                    placeholder="Paste the job description here..."
+                    className="h-32 mt-1"
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    onClick={handleATSOptimization}
+                    disabled={isLoading}
+                    className="flex-1"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Optimizing...
+                      </>
+                    ) : (
+                      <>
+                        <Target className="mr-2 h-4 w-4" />
+                        Analyze for ATS
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleAutoOptimize}
+                    disabled={isLoading}
+                    variant="default"
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Optimizing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Auto-Optimize Resume
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-              <Button onClick={handleJobMatchAnalysis} disabled={isLoading}>
-                {isLoading ? "Analyzing match..." : "Analyze Job Match"}
-              </Button>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          {result && (
-            <div className="mt-6">
-              <Label htmlFor="result">AI Assistant Results</Label>
-              <div className="p-4 border rounded-md bg-gray-50 mt-2 whitespace-pre-wrap">
+            <TabsContent value="skills-suggestions">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="industry" className="text-sm font-medium">
+                      Industry
+                    </Label>
+                    <Input
+                      id="industry"
+                      placeholder="e.g. Software Development"
+                      value={industry}
+                      onChange={(e) => setIndustry(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor="years-experience"
+                      className="text-sm font-medium"
+                    >
+                      Years of Experience
+                    </Label>
+                    <Input
+                      id="years-experience"
+                      type="number"
+                      min="0"
+                      placeholder="e.g. 5"
+                      value={yearsExperience}
+                      onChange={(e) => setYearsExperience(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <Button
+                  onClick={handleIndustrySkillSuggestions}
+                  disabled={isLoading}
+                  className="w-full sm:w-auto"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Getting suggestions...
+                    </>
+                  ) : (
+                    <>
+                      <Badge className="mr-2 h-4 w-4" />
+                      Get Industry Skills Suggestions
+                    </>
+                  )}
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="job-match">
+              <div className="space-y-4">
+                <div>
+                  <Label
+                    htmlFor="job-match-description"
+                    className="text-sm font-medium"
+                  >
+                    Job Description
+                  </Label>
+                  <Textarea
+                    id="job-match-description"
+                    placeholder="Paste the job description here..."
+                    className="h-32 mt-1"
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                  />
+                </div>
+                <Button
+                  onClick={handleJobMatchAnalysis}
+                  disabled={isLoading}
+                  className="w-full sm:w-auto"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing match...
+                    </>
+                  ) : (
+                    <>
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      Analyze Job Match
+                    </>
+                  )}
+                </Button>
+              </div>
+            </TabsContent>
+          </div>
+
+          {isLoading && (
+            <div className="flex justify-center items-center py-12">
+              <div className="flex flex-col items-center">
+                <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mb-4" />
+                <p className="text-gray-600 text-sm">
+                  AI is working on your request...
+                </p>
+              </div>
+            </div>
+          )}
+
+          {result && !isLoading && (
+            <div className="mt-2 bg-white border rounded-lg shadow-sm overflow-hidden">
+              <div className="flex justify-between items-center px-3 sm:px-4 py-2 bg-slate-50 border-b">
+                <Label className="font-medium text-xs sm:text-sm text-slate-700">
+                  AI Assistant Results
+                </Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={copyToClipboard}
+                  className="h-7 sm:h-8 px-2 sm:px-3"
+                >
+                  {copied ? (
+                    <CheckCheck className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <div className="p-3 sm:p-4 whitespace-pre-wrap text-xs sm:text-sm bg-white max-h-[350px] overflow-y-auto">
                 {result}
               </div>
             </div>
           )}
         </Tabs>
       </CardContent>
+      <CardFooter className="bg-slate-50 border-t px-6 py-4">
+        <p className="text-xs text-slate-500 w-full text-center">
+          Powered by Mastra AI - Improve your resume with AI-powered suggestions
+        </p>
+      </CardFooter>
     </Card>
   );
 }

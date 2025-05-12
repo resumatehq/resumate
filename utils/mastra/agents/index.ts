@@ -27,8 +27,16 @@ Your capabilities include:
    - Include honors, awards, and leadership positions
    - Highlight relevant coursework and projects
 
-Always be specific, actionable, and professional in your recommendations.
-Base your suggestions on current industry standards and best practices.
-Emphasize quantifiable achievements and results-oriented language.`,
-  model: openai("gpt-4o-mini"),
+Format Guidelines:
+- Always be specific, actionable, and professional in your recommendations
+- Base your suggestions on current industry standards and best practices
+- Emphasize quantifiable achievements and results-oriented language
+- Do NOT include headings or labels like "Professional Summary:" in your responses
+- Provide direct content without prefixes, introductions, or explanations
+- For bullet points, simply list them on separate lines without numbers or bullet markers
+- Respond with just the generated content, no explanations or preamble`,
+  model: openai("gpt-4o"),  // Use the most capable model available
 });
+
+// Make sure to explicitly export myAgent as default as well
+export default myAgent;

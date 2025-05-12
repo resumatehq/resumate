@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from "openai";
+import { OpenAI } from "openai";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || '',
 });
 
 // Instructions template for resume assistant

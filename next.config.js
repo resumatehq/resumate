@@ -16,6 +16,9 @@ const nextConfig = {
         worker_threads: false,
         perf_hooks: false,
         dns: false,
+        path: false,
+        stream: false,
+        util: false
       };
     }
     

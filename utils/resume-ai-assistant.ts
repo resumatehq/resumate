@@ -15,9 +15,9 @@ import { IResume } from "@/schemas/resume.schema";
  * @param prompt The prompt to send to the AI
  * @returns The AI response
  */
-async function callAI(prompt: string): Promise<string> {
+async function callMastraAPI(prompt: string): Promise<string> {
   try {
-    const response = await fetch('/api/ai', {
+    const response = await fetch('/api/mastra', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,9 +30,15 @@ async function callAI(prompt: string): Promise<string> {
     }
 
     const data = await response.json();
+    
+    if (!data.result) {
+      console.error('Invalid API response:', data);
+      throw new Error('Invalid API response: Missing result field');
+    }
+    
     return data.result;
   } catch (error) {
-    console.error('Error calling AI API:', error);
+    console.error('Error calling Mastra API:', error);
     throw error;
   }
 }
@@ -61,7 +67,7 @@ export async function getJobDescriptionSuggestions(resumeData: IResume, jobTitle
       Format your response with clear sections and bullet points.
     `;
     
-    return await callAI(prompt);
+    return await callMastraAPI(prompt);
   } catch (error) {
     console.error("Error getting job description suggestions:", error);
     return "Failed to get job description suggestions. Please try again later.";
@@ -100,7 +106,7 @@ export async function getContentQualityAssessment(resumeData: IResume) {
       Format your response with clear sections and bullet points.
     `;
     
-    return await callAI(prompt);
+    return await callMastraAPI(prompt);
   } catch (error) {
     console.error("Error getting content quality assessment:", error);
     return "Failed to analyze resume content. Please try again later.";
@@ -131,7 +137,7 @@ export async function getATSOptimization(resumeData: IResume, jobDescription: st
       Format your response with clear sections and bullet points.
     `;
     
-    return await callAI(prompt);
+    return await callMastraAPI(prompt);
   } catch (error) {
     console.error("Error getting ATS optimization:", error);
     return "Failed to get ATS optimization suggestions. Please try again later.";
@@ -158,7 +164,7 @@ export async function getIndustrySkillSuggestions(industry: string, yearsExperie
       Format your response with clear sections for each type of skill.
     `;
     
-    return await callAI(prompt);
+    return await callMastraAPI(prompt);
   } catch (error) {
     console.error("Error getting industry skill suggestions:", error);
     return "Failed to get industry skill suggestions. Please try again later.";
@@ -192,7 +198,7 @@ export async function getJobMatchAnalysis(resumeData: IResume, jobDescription: s
       Format your response with clear sections and bullet points.
     `;
     
-    return await callAI(prompt);
+    return await callMastraAPI(prompt);
   } catch (error) {
     console.error("Error getting job match analysis:", error);
     return "Failed to get job match analysis. Please try again later.";
@@ -221,7 +227,7 @@ export async function getOptimizedResume(resumeData: IResume, jobDescription: st
       Focus on making concrete, actionable suggestions.
     `;
     
-    await callAI(prompt);
+    await callMastraAPI(prompt);
     
     // In a real implementation, we would parse the AI response and apply changes
     // For now, return the original resume as we'd need more complex logic to apply changes

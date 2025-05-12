@@ -5,9 +5,9 @@ import { IPersonalInfoContent, IResume, IResumeSection } from "@/schemas/resume.
  * @param prompt The prompt to send to the AI
  * @returns The AI response
  */
-async function callAI(prompt: string): Promise<string> {
+async function callMastraAPI(prompt: string): Promise<string> {
   try {
-    const response = await fetch('/api/ai', {
+    const response = await fetch('/api/mastra', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -20,9 +20,15 @@ async function callAI(prompt: string): Promise<string> {
     }
 
     const data = await response.json();
+    
+    if (!data.result) {
+      console.error('Invalid API response:', data);
+      throw new Error('Invalid API response: Missing result field');
+    }
+    
     return data.result;
   } catch (error) {
-    console.error('Error calling AI API:', error);
+    console.error('Error calling Mastra API:', error);
     throw error;
   }
 }
@@ -34,29 +40,46 @@ async function callAI(prompt: string): Promise<string> {
  */
 export async function generateProfessionalSummary(personalInfo: IPersonalInfoContent): Promise<string> {
   try {
+    if (!personalInfo.fullName) {
+      return "Please provide your full name to generate a more personalized summary.";
+    }
+
     const prompt = `
       Generate a professional summary for a person with the following information:
       - Name: ${personalInfo.fullName}
       - Job Title: ${personalInfo.jobTilte || "professional"}
       
-      The summary should be concise (3-4 sentences), professional, and highlight their value proposition as a ${personalInfo.jobTilte || "professional"}.
-      Focus on making it achievement-oriented and tailored for their resume.
+      The summary should be:
+      - Concise (3-4 sentences)
+      - Professional and achievement-oriented
+      - Highlight their value proposition as a ${personalInfo.jobTilte || "professional"}
+      - Tailored for their resume
+      - Include no labels or titles like "Professional Summary:" in your response
+      - Start directly with the content
       
-      Important: Provide ONLY the summary text. Do not include any headings, labels, or prefixes like "Professional Summary:" in your response.
+      Provide ONLY the summary text with no additional formatting, explanations, or labels.
     `;
     
-    let result = await callAI(prompt);
+    let result = await callMastraAPI(prompt);
     
     // Clean up result by removing headings like "Professional Summary:"
     result = result.replace(/^(Professional\s+Summary:?\s*)/i, '');
+    result = result.replace(/^(Summary:?\s*)/i, '');
     
     // Trim extra whitespace
     result = result.trim();
     
+    if (!result || result.length < 10) {
+      throw new Error("Generated summary is too short or empty");
+    }
+    
     return result;
   } catch (error) {
     console.error("Error generating professional summary:", error);
-    return "Error generating summary. Please try again.";
+    if (error instanceof Error) {
+      return `Unable to generate summary: ${error.message}. Please try again later.`;
+    }
+    return "Error generating summary. Please check your network connection and try again.";
   }
 }
 
@@ -80,7 +103,7 @@ export async function generateJobDescriptions(resume: IResume, jobTitle: string)
       Format each bullet point as a separate entry in a list without numbers or bullet points.
     `;
     
-    const result = await callAI(prompt);
+    const result = await callMastraAPI(prompt);
     
     // Split the response into separate lines and filter out empty lines
     const descriptions = result
@@ -114,7 +137,7 @@ export async function generateSkillsSuggestions(jobTitle: string): Promise<strin
       Format each skill as a separate entry in a list without numbers or bullet points.
     `;
     
-    const result = await callAI(prompt);
+    const result = await callMastraAPI(prompt);
     
     // Split the response into separate lines and filter out empty lines
     const skills = result
@@ -150,7 +173,7 @@ export async function generateEducationAchievements(institution: string, degree:
       Format each achievement as a separate entry in a list without numbers or bullet points.
     `;
     
-    const result = await callAI(prompt);
+    const result = await callMastraAPI(prompt);
     
     // Split the response into separate lines and filter out empty lines
     const achievements = result
