@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useResume } from "@/context/resume-context";
-import { IResumeSection } from "@/schemas/resume.schema";
+import { IResumeSection, SectionType } from "@/schemas/resume.schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -20,6 +20,21 @@ import { LanguagesEditor } from "./editors/languages-editor";
 import { InterestsEditor } from "./editors/interests-editor";
 import { VolunteerEditor } from "./editors/volunteer-editor";
 
+// List of section types that have editor components
+export const AVAILABLE_SECTION_TYPES: SectionType[] = [
+  "personal",
+  "education",
+  "experience",
+  "skills",
+  "projects",
+  "certifications",
+  "awards",
+  "languages",
+  "interests",
+  "volunteer",
+  "custom",
+];
+
 const CustomSectionEditor = ({ section }: { section: IResumeSection }) => (
   <div className="p-4 border rounded-md bg-gray-50">
     <p className="text-sm text-gray-500">
@@ -31,6 +46,11 @@ const CustomSectionEditor = ({ section }: { section: IResumeSection }) => (
 interface SectionEditorProps {
   section: IResumeSection;
 }
+
+// Function to determine if a section type has an associated editor
+const hasSectionEditor = (type: SectionType): boolean => {
+  return AVAILABLE_SECTION_TYPES.includes(type);
+};
 
 export function SectionEditor({ section }: SectionEditorProps) {
   const {

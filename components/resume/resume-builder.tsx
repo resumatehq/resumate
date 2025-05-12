@@ -4,9 +4,18 @@ import { useEffect, useState } from "react";
 import { useResume } from "@/context/resume-context";
 import type { IResume } from "@/schemas/resume.schema";
 import { Button } from "@/components/ui/button";
-import { Plus, Save, Download, Eye, EyeOff, Undo, Redo } from "lucide-react";
+import {
+  Plus,
+  Save,
+  Download,
+  Eye,
+  EyeOff,
+  Undo,
+  Redo,
+  ChevronDown,
+} from "lucide-react";
 import type { SectionType } from "@/schemas/resume.schema";
-import { SectionEditor } from "./section-editor";
+import { SectionEditor, AVAILABLE_SECTION_TYPES } from "./section-editor";
 import { ResumePreview } from "./resume-preview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -17,10 +26,34 @@ import {
 import { toast } from "@/hooks/use-toast";
 import type { CreateResumeType } from "@/schemas/resume.schema";
 import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ResumeBuilderProps {
   initialResume?: IResume;
 }
+
+// Define section types with user-friendly labels
+const SECTION_TYPE_LABELS: Record<SectionType, string> = {
+  personal: "Personal Information",
+  education: "Education",
+  experience: "Work Experience",
+  skills: "Skills",
+  projects: "Projects",
+  certifications: "Certifications",
+  awards: "Awards",
+  languages: "Languages",
+  interests: "Interests",
+  volunteer: "Volunteer Experience",
+  summary: "Summary",
+  references: "References",
+  publications: "Publications",
+  custom: "Custom Section",
+};
 
 export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   const { resume, setResume, addSection, undo, redo, canUndo, canRedo } =
@@ -88,7 +121,35 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   }
 
   const handleAddSection = (type: SectionType) => {
+    // Check if section already exists for unique section types
+    const existingSections =
+      resume?.sections.filter((s) => s.type === type) || [];
+
+    // If it's a unique section type that already exists, don't add it again
+    if (type === "personal" && existingSections.length > 0) {
+      toast({
+        title: "Section already exists",
+        description: "You can only have one Personal Information section",
+        variant: "destructive",
+      });
+      return;
+    }
+
     addSection(type);
+  };
+
+  const isUniqueSection = (type: SectionType): boolean => {
+    return type === "personal";
+  };
+
+  const canAddSection = (type: SectionType): boolean => {
+    // If it's not a unique section, it can always be added
+    if (!isUniqueSection(type)) return true;
+
+    // If it's a unique section, check if it already exists
+    const existingSections =
+      resume?.sections.filter((s) => s.type === type) || [];
+    return existingSections.length === 0;
   };
 
   const togglePreviewMode = () => {
@@ -286,14 +347,29 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
                   <div className="flex justify-between items-center">
                     <h2 className="text-lg font-semibold">Resume Sections</h2>
                     <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAddSection("personal")}
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Section
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Section
+                            <ChevronDown className="w-4 h-4 ml-2" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {AVAILABLE_SECTION_TYPES.filter(
+                            (sectionType) =>
+                              sectionType !== "summary" &&
+                              canAddSection(sectionType)
+                          ).map((sectionType) => (
+                            <DropdownMenuItem
+                              key={sectionType}
+                              onClick={() => handleAddSection(sectionType)}
+                            >
+                              {SECTION_TYPE_LABELS[sectionType]}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
 
