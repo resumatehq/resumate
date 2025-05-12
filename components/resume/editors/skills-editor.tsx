@@ -24,20 +24,13 @@ export function SkillsEditor({ section }: SkillsEditorProps) {
 
   // Get content safely or use default empty object
   const content =
-    section.content &&
-    Array.isArray(section.content) &&
-    section.content.length > 0 &&
-    section.content[0]
+    Array.isArray(section.content) && section.content.length > 0
       ? (section.content[0] as ISkillContent)
       : defaultSkills;
 
   // Initialize content if it doesn't exist
   useEffect(() => {
-    if (
-      !section.content ||
-      !Array.isArray(section.content) ||
-      section.content.length === 0
-    ) {
+    if (!Array.isArray(section.content) || section.content.length === 0) {
       updateSectionContent(section._id!, [defaultSkills]);
     }
   }, [section._id, section.content, updateSectionContent, defaultSkills]);
@@ -47,44 +40,33 @@ export function SkillsEditor({ section }: SkillsEditorProps) {
     index: number,
     value: string
   ) => {
-    // Ensure the category array exists
-    const categoryArray = content[category] || [];
-
     const updatedContent = {
       ...content,
-      [category]: categoryArray.map((skill: string, i: number) =>
-        i === index ? value : skill
-      ),
+      [category]:
+        content[category]?.map((skill: string, i: number) =>
+          i === index ? value : skill
+        ) || [],
     };
     updateSectionContent(section._id!, [updatedContent]);
   };
 
   const handleAddSkill = (category: keyof ISkillContent) => {
-    // Ensure the category array exists
-    const categoryArray = content[category] || [];
-
     const updatedContent = {
       ...content,
-      [category]: [...categoryArray, ""],
+      [category]: [...(content[category] || []), ""],
     };
     updateSectionContent(section._id!, [updatedContent]);
   };
 
   const handleRemoveSkill = (category: keyof ISkillContent, index: number) => {
-    // Ensure the category array exists
-    const categoryArray = content[category] || [];
-
     const updatedContent = {
       ...content,
-      [category]: categoryArray.filter((_: string, i: number) => i !== index),
+      [category]: (content[category] || []).filter(
+        (_: string, i: number) => i !== index
+      ),
     };
     updateSectionContent(section._id!, [updatedContent]);
   };
-
-  // Ensure all arrays exist
-  const technical = content.technical || [];
-  const soft = content.soft || [];
-  const languages = content.languages || [];
 
   return (
     <div className="space-y-6">
@@ -101,7 +83,7 @@ export function SkillsEditor({ section }: SkillsEditorProps) {
             Add Skill
           </Button>
         </div>
-        {technical.map((skill, index) => (
+        {(content.technical || []).map((skill, index) => (
           <div key={index} className="flex gap-2">
             <Input
               value={skill || ""}
@@ -118,7 +100,7 @@ export function SkillsEditor({ section }: SkillsEditorProps) {
             </Button>
           </div>
         ))}
-        {technical.length === 0 && (
+        {(!content.technical || content.technical.length === 0) && (
           <div className="text-sm text-gray-500 italic">
             No technical skills added yet. Click "Add Skill" to add one.
           </div>
@@ -138,7 +120,7 @@ export function SkillsEditor({ section }: SkillsEditorProps) {
             Add Skill
           </Button>
         </div>
-        {soft.map((skill, index) => (
+        {(content.soft || []).map((skill, index) => (
           <div key={index} className="flex gap-2">
             <Input
               value={skill || ""}
@@ -153,7 +135,7 @@ export function SkillsEditor({ section }: SkillsEditorProps) {
             </Button>
           </div>
         ))}
-        {soft.length === 0 && (
+        {(!content.soft || content.soft.length === 0) && (
           <div className="text-sm text-gray-500 italic">
             No soft skills added yet. Click "Add Skill" to add one.
           </div>
@@ -173,7 +155,7 @@ export function SkillsEditor({ section }: SkillsEditorProps) {
             Add Language
           </Button>
         </div>
-        {languages.map((language, index) => (
+        {(content.languages || []).map((language, index) => (
           <div key={index} className="flex gap-2">
             <Input
               value={language || ""}
@@ -190,7 +172,7 @@ export function SkillsEditor({ section }: SkillsEditorProps) {
             </Button>
           </div>
         ))}
-        {languages.length === 0 && (
+        {(!content.languages || content.languages.length === 0) && (
           <div className="text-sm text-gray-500 italic">
             No languages added yet. Click "Add Language" to add one.
           </div>
