@@ -14,7 +14,6 @@ import { EducationEditor } from "./editors/education-editor";
 import { ExperienceEditor } from "./editors/experience-editor";
 import { SkillsEditor } from "./editors/skills-editor";
 import { ProjectsEditor } from "./editors/projects-editor";
-import { SummaryEditor } from "./editors/summary-editor";
 import { CertificationsEditor } from "./editors/certifications-editor";
 import { AwardsEditor } from "./editors/awards-editor";
 import { LanguagesEditor } from "./editors/languages-editor";
@@ -117,7 +116,6 @@ export function SectionEditor({ section }: SectionEditorProps) {
         {section.type === "personal" && (
           <PersonalInfoEditor section={section} />
         )}
-        {section.type === "summary" && <SummaryEditor section={section} />}
         {section.type === "education" && <EducationEditor section={section} />}
         {section.type === "experience" && (
           <ExperienceEditor section={section} />

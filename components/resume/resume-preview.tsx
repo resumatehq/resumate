@@ -49,13 +49,41 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
 
     switch (section.type) {
       case "personal":
-        return renderPersonalInfo(section.content as IPersonalInfoContent);
+        try {
+          // Handle both array and direct object formats
+          if (Array.isArray(section.content) && section.content.length > 0) {
+            return renderPersonalInfo(
+              section.content[0] as IPersonalInfoContent
+            );
+          } else if (!Array.isArray(section.content)) {
+            return renderPersonalInfo(section.content as IPersonalInfoContent);
+          }
+          return null;
+        } catch (error) {
+          console.error("Error rendering personal info section:", error);
+          return (
+            <div>There was an error displaying the personal info section</div>
+          );
+        }
       case "summary":
-        const summaryContent = section.content as unknown as {
-          summary: string;
-          highlights: string[];
-        };
-        return renderSummary(summaryContent);
+        try {
+          // Handle both array and direct object formats for summary
+          let summaryContent;
+
+          if (Array.isArray(section.content) && section.content.length > 0) {
+            summaryContent = section.content[0];
+          } else if (!Array.isArray(section.content)) {
+            summaryContent = section.content;
+          } else {
+            summaryContent = { content: "", highlights: [] };
+          }
+
+          console.log("Summary content:", summaryContent);
+          return renderSummary(summaryContent);
+        } catch (error) {
+          console.error("Error rendering summary section:", error);
+          return <div>There was an error displaying the summary section</div>;
+        }
       case "experience":
         try {
           const experienceContent = Array.isArray(section.content)
@@ -255,18 +283,15 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
     );
   };
 
-  const renderSummary = (summary: {
-    summary: string;
-    highlights: string[];
-  }) => {
+  const renderSummary = (summary: any) => {
     return (
       <div className="mb-4">
-        {summary.summary && (
-          <p className="text-gray-700 mb-4">{summary.summary}</p>
+        {summary.content && (
+          <p className="text-gray-700 mb-4">{summary.content}</p>
         )}
         {summary.highlights && summary.highlights.length > 0 && (
           <ul className="list-disc list-inside space-y-1 text-gray-700">
-            {summary.highlights.map((highlight, index) => (
+            {summary.highlights.map((highlight: string, index: number) => (
               <li key={index}>{highlight}</li>
             ))}
           </ul>
@@ -698,16 +723,6 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
         {/* Personal Info section */}
         {personalSection && personalSection.enabled && (
           <div className="mb-6">{renderSectionContent(personalSection)}</div>
-        )}
-
-        {/* Summary section */}
-        {summarySection && summarySection.enabled && (
-          <div className="mb-6">
-            <h2 className="text-xl font-bold mb-3 pb-1 border-b border-gray-300">
-              {summarySection.title}
-            </h2>
-            {renderSectionContent(summarySection)}
-          </div>
         )}
 
         {/* Experience section */}
