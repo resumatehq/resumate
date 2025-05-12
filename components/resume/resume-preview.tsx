@@ -732,6 +732,7 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
             Page 1 End
           </div>
         </div>
+
         <div
           className="absolute left-0 right-0 border-t-2 border-dashed border-blue-400 z-10 pointer-events-none"
           style={{ top: "2240px" }}
@@ -744,6 +745,16 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
         {/* Personal Info section */}
         {personalSection && personalSection.enabled && (
           <div className="mb-6">{renderSectionContent(personalSection)}</div>
+        )}
+
+        {/* Summary section */}
+        {summarySection && summarySection.enabled && (
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-3 pb-1 border-b border-gray-300">
+              {summarySection.title}
+            </h2>
+            {renderSectionContent(summarySection)}
+          </div>
         )}
 
         {/* Experience section */}

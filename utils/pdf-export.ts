@@ -4,7 +4,13 @@ import html2canvas from 'html2canvas';
 // Constants for A4 paper dimensions
 const A4_WIDTH_PX = 794; // A4 width at 96 DPI
 const A4_HEIGHT_PX = 1123; // A4 height at 96 DPI (matches the preview page break)
-const PAGE_MARGIN = 20;
+const PAGE_MARGIN_SIDES = 20; // Left/right margins
+const PAGE_MARGIN_TOP_FIRST_PAGE = 20; // Top margin for first page
+const PAGE_MARGIN_TOP_OTHER_PAGES = 40; // Top margin for other pages
+const PAGE_MARGIN_BOTTOM = 40; // Bottom margin
+
+// Fixed page break positions - these should match the positions where pages would naturally break
+const PAGE_BREAK_POSITIONS = [1120, 2240, 3360]; // Add more if needed
 
 /**
  * Exports a DOM element as a PDF file
@@ -28,17 +34,24 @@ export const exportToPdf = async (elementId: string, filename: string = 'resume.
       indicator.parentNode?.removeChild(indicator);
     });
     
-    // Set styles for proper PDF rendering
+    // Remove the visual page break elements
+    const pageBreakElements = clone.querySelectorAll('.page-break-divider');
+    pageBreakElements.forEach(pageBreak => {
+      pageBreak.parentNode?.removeChild(pageBreak);
+    });
+    
+    // Set styles for proper PDF rendering - use original margins for the first page
     clone.style.width = `${A4_WIDTH_PX}px`;
-    clone.style.padding = `${PAGE_MARGIN}px`;
+    clone.style.padding = `${PAGE_MARGIN_TOP_FIRST_PAGE}px ${PAGE_MARGIN_SIDES}px ${PAGE_MARGIN_BOTTOM}px`;
     clone.style.boxSizing = 'border-box';
     clone.style.margin = '0 auto'; // Center the content
     
-    // Apply a style to override any problematic colors
+    // Apply a style to override any problematic colors and improve layout
     const styleElement = document.createElement('style');
     styleElement.textContent = `
       * {
         color-scheme: light !important;
+        font-family: Arial, sans-serif !important;
       }
       [data-theme] {
         color-scheme: light !important;
@@ -49,6 +62,17 @@ export const exportToPdf = async (elementId: string, filename: string = 'resume.
       body {
         margin: 0;
       }
+      h1, h2, h3, h4, h5, h6 {
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+        page-break-after: avoid;
+      }
+      section, div.mb-6 {
+        page-break-inside: avoid;
+      }
+      ul, li {
+        page-break-inside: avoid;
+      }
     `;
     clone.appendChild(styleElement);
     
@@ -56,67 +80,88 @@ export const exportToPdf = async (elementId: string, filename: string = 'resume.
     document.body.appendChild(clone);
     
     try {
-      // Create canvas from the element with simpler options
-      const canvas = await html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#FFFFFF',
-        logging: false,
-        onclone: (clonedDoc) => {
-          // This callback gives us another opportunity to modify the cloned document
-          const allElements = clonedDoc.querySelectorAll('*');
-          allElements.forEach(el => {
-            if (el instanceof HTMLElement) {
-              // Force standard colors for all elements
-              el.style.colorScheme = 'light';
-            }
-          });
-        }
-      });
-      
-      // Calculate PDF dimensions
-      const imgData = canvas.toDataURL('image/png');
+      // Use jsPDF directly with html2canvas for each page to reduce file size and improve layout
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'px',
         format: 'a4',
+        compress: true, // Enable compression to reduce file size
       });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const contentWidth = pdfWidth - (PAGE_MARGIN * 2);
-      const ratio = canvas.width / contentWidth;
-      const canvasHeight = canvas.height / ratio;
+      const contentWidth = pdfWidth - (PAGE_MARGIN_SIDES * 2);
       
-      // Function to add content to a page with margins
-      const addContentToPage = (yPosition: number = 0) => {
-        pdf.addImage(
-          imgData, 
-          'PNG', 
-          PAGE_MARGIN, // Left margin
-          PAGE_MARGIN + yPosition, // Top margin + position offset
-          contentWidth, 
-          canvasHeight
-        );
+      // Function to capture a specific portion of the document
+      const captureSection = async (startY: number, endY: number, isFirstPage: boolean = false) => {
+        const sectionHeight = endY - startY;
+        
+        // Set up canvas options with lower scale to reduce file size
+        const canvasOptions = {
+          scale: 1.5, // Lower scale to reduce file size
+          useCORS: true,
+          backgroundColor: '#FFFFFF',
+          logging: false,
+          x: 0,
+          y: startY,
+          width: clone.offsetWidth,
+          height: sectionHeight,
+          windowWidth: clone.offsetWidth,
+          windowHeight: clone.scrollHeight,
+        };
+        
+        const canvas = await html2canvas(clone, canvasOptions);
+        
+        // Calculate dimensions to fit in PDF
+        const imgData = canvas.toDataURL('image/jpeg', 0.95); // Use JPEG with 95% quality to reduce size
+        const ratio = canvas.width / contentWidth;
+        const scaledHeight = canvas.height / ratio;
+        
+        const topMargin = isFirstPage ? PAGE_MARGIN_TOP_FIRST_PAGE : PAGE_MARGIN_TOP_OTHER_PAGES;
+        
+        return {
+          imgData,
+          scaledHeight,
+          topMargin
+        };
       };
       
-      // Add first page with margins
-      addContentToPage();
+      // Process the first page (from 0 to first page break)
+      const firstPage = await captureSection(0, PAGE_BREAK_POSITIONS[0], true);
+      pdf.addImage(
+        firstPage.imgData,
+        'JPEG',
+        PAGE_MARGIN_SIDES,
+        firstPage.topMargin,
+        contentWidth,
+        firstPage.scaledHeight
+      );
       
-      // If content exceeds page height, create additional pages with margins
-      if (canvasHeight > pdfHeight - (PAGE_MARGIN * 2)) {
-        let remainingHeight = canvasHeight;
-        let position = -(pdfHeight - (PAGE_MARGIN * 2)); // Starting position for the second page
+      // Process remaining pages
+      for (let i = 1; i < PAGE_BREAK_POSITIONS.length; i++) {
+        const startY = PAGE_BREAK_POSITIONS[i-1];
+        const endY = PAGE_BREAK_POSITIONS[i];
         
-        while (remainingHeight > (pdfHeight - (PAGE_MARGIN * 2))) {
-          pdf.addPage();
-          addContentToPage(position);
-          remainingHeight -= (pdfHeight - (PAGE_MARGIN * 2));
-          position -= (pdfHeight - (PAGE_MARGIN * 2));
-        }
+        if (startY >= clone.scrollHeight) break;
+        
+        const endPos = Math.min(endY, clone.scrollHeight);
+        const page = await captureSection(startY, endPos);
+        
+        pdf.addPage();
+        pdf.addImage(
+          page.imgData,
+          'JPEG',
+          PAGE_MARGIN_SIDES,
+          page.topMargin,
+          contentWidth,
+          page.scaledHeight
+        );
+        
+        // Break if we've reached the end of the content
+        if (endPos >= clone.scrollHeight) break;
       }
       
-      // Save the PDF
+      // Save the PDF with compression
       pdf.save(filename);
       
       return Promise.resolve();
