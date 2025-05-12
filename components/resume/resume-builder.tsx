@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { exportToPdf } from "@/utils/pdf-export";
+import { ResumeAIAssistant } from "./ai-assistant";
 
 interface ResumeBuilderProps {
   initialResume?: IResume;
@@ -376,6 +377,7 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
                   <TabsTrigger value="sections">Sections</TabsTrigger>
                   <TabsTrigger value="template">Template</TabsTrigger>
                   <TabsTrigger value="settings">Settings</TabsTrigger>
+                  <TabsTrigger value="ai-assistant">AI Assistant</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="sections" className="space-y-6">
@@ -472,6 +474,10 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
                       </div>
                     </div>
                   </div>
+                </TabsContent>
+
+                <TabsContent value="ai-assistant">
+                  <ResumeAIAssistant resume={resume} />
                 </TabsContent>
               </Tabs>
             </div>

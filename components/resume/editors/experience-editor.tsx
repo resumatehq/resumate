@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Sparkles } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { generateJobDescriptions } from "@/utils/form-ai-assistant";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ExperienceEditorProps {
   section: IResumeSection;
@@ -19,6 +21,9 @@ interface ExperienceEditorProps {
 
 export function ExperienceEditor({ section }: ExperienceEditorProps) {
   const { updateSectionContent } = useResume();
+  const { toast } = useToast();
+  const [generatingIndex, setGeneratingIndex] = useState<number | null>(null);
+  const { resume } = useResume();
 
   // Ensure content is always an array
   const content = Array.isArray(section.content)
@@ -152,6 +157,51 @@ export function ExperienceEditor({ section }: ExperienceEditorProps) {
     updateSectionContent(section._id!, updatedContent);
   };
 
+  const handleGenerateAchievements = async (index: number) => {
+    const experience = content[index];
+
+    if (!experience.position) {
+      toast({
+        title: "Missing information",
+        description: "Please enter the job position first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGeneratingIndex(index);
+    try {
+      const descriptions = await generateJobDescriptions(
+        resume!,
+        experience.position
+      );
+
+      // Add the generated achievements to the existing ones
+      const updatedContent = [...content];
+      updatedContent[index] = {
+        ...updatedContent[index],
+        achievements: [...descriptions],
+      };
+
+      updateSectionContent(section._id!, updatedContent);
+
+      toast({
+        title: "Job descriptions generated",
+        description:
+          "Professional job descriptions have been generated successfully",
+      });
+    } catch (error) {
+      console.error("Error generating job descriptions:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate job descriptions",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingIndex(null);
+    }
+  };
+
   // If content is still empty after initialization attempt, show a loading state
   if (content.length === 0) {
     return (
@@ -214,12 +264,32 @@ export function ExperienceEditor({ section }: ExperienceEditorProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor={`endDate-${index}`}>End Date</Label>
-              <Input
-                id={`endDate-${index}`}
-                type="month"
-                value={experience.endDate || ""}
-                onChange={(e) => handleChange(index, "endDate", e.target.value)}
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                  id={`endDate-${index}`}
+                  type="month"
+                  value={experience.endDate || ""}
+                  onChange={(e) =>
+                    handleChange(index, "endDate", e.target.value)
+                  }
+                  disabled={experience.currentPosition === true}
+                />
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`currentPosition-${index}`}
+                    checked={experience.currentPosition === true}
+                    onCheckedChange={(checked) =>
+                      handleChange(index, "currentPosition", checked === true)
+                    }
+                  />
+                  <Label
+                    htmlFor={`currentPosition-${index}`}
+                    className="text-sm font-normal"
+                  >
+                    Current
+                  </Label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -247,14 +317,27 @@ export function ExperienceEditor({ section }: ExperienceEditorProps) {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label>Achievements</Label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleAddAchievement(index)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Achievement
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleGenerateAchievements(index)}
+                  disabled={generatingIndex === index}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {generatingIndex === index
+                    ? "Generating..."
+                    : "Generate Descriptions"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleAddAchievement(index)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add
+                </Button>
+              </div>
             </div>
             {experience.achievements?.map((achievement, achievementIndex) => (
               <div key={achievementIndex} className="flex gap-2">
@@ -283,7 +366,7 @@ export function ExperienceEditor({ section }: ExperienceEditorProps) {
 
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label>Technologies</Label>
+              <Label>Technologies Used</Label>
               <Button
                 variant="outline"
                 size="sm"
@@ -293,22 +376,18 @@ export function ExperienceEditor({ section }: ExperienceEditorProps) {
                 Add Technology
               </Button>
             </div>
-            {experience.technologies?.map((technology, technologyIndex) => (
-              <div key={technologyIndex} className="flex gap-2">
+            {experience.technologies?.map((technology, techIndex) => (
+              <div key={techIndex} className="flex gap-2">
                 <Input
                   value={technology || ""}
                   onChange={(e) =>
-                    handleTechnologyChange(
-                      index,
-                      technologyIndex,
-                      e.target.value
-                    )
+                    handleTechnologyChange(index, techIndex, e.target.value)
                   }
                 />
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleRemoveTechnology(index, technologyIndex)}
+                  onClick={() => handleRemoveTechnology(index, techIndex)}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -320,7 +399,7 @@ export function ExperienceEditor({ section }: ExperienceEditorProps) {
 
       <Button onClick={handleAddExperience} className="w-full">
         <Plus className="w-4 h-4 mr-2" />
-        Add Experience
+        Add Another Experience
       </Button>
     </div>
   );

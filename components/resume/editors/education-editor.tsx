@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { Plus, Trash2, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { generateEducationAchievements } from "@/utils/form-ai-assistant";
+import { useToast } from "@/components/ui/use-toast";
 
 interface EducationEditorProps {
   section: IResumeSection;
@@ -15,6 +17,8 @@ interface EducationEditorProps {
 
 export function EducationEditor({ section }: EducationEditorProps) {
   const { updateSectionContent } = useResume();
+  const { toast } = useToast();
+  const [generatingIndex, setGeneratingIndex] = useState<number | null>(null);
 
   // Ensure content is always an array
   const content = Array.isArray(section.content)
@@ -111,6 +115,50 @@ export function EducationEditor({ section }: EducationEditorProps) {
       achievements,
     };
     updateSectionContent(section._id!, updatedContent);
+  };
+
+  const handleGenerateAchievements = async (index: number) => {
+    const education = content[index];
+
+    if (!education.institution || !education.degree) {
+      toast({
+        title: "Missing information",
+        description: "Please enter the institution and degree first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGeneratingIndex(index);
+    try {
+      const achievements = await generateEducationAchievements(
+        education.institution,
+        education.degree
+      );
+
+      // Add the generated achievements to the existing ones
+      const updatedContent = [...content];
+      updatedContent[index] = {
+        ...updatedContent[index],
+        achievements: [...achievements],
+      };
+
+      updateSectionContent(section._id!, updatedContent);
+
+      toast({
+        title: "Achievements generated",
+        description: "Education achievements have been generated successfully",
+      });
+    } catch (error) {
+      console.error("Error generating achievements:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate education achievements",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingIndex(null);
+    }
   };
 
   // If content is still empty after initialization attempt, show a loading state
@@ -229,14 +277,27 @@ export function EducationEditor({ section }: EducationEditorProps) {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label>Achievements</Label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleAddAchievement(index)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Achievement
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleGenerateAchievements(index)}
+                  disabled={generatingIndex === index}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {generatingIndex === index
+                    ? "Generating..."
+                    : "Generate Achievements"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleAddAchievement(index)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add
+                </Button>
+              </div>
             </div>
             {education.achievements?.map((achievement, achievementIndex) => (
               <div key={achievementIndex} className="flex gap-2">
@@ -267,7 +328,7 @@ export function EducationEditor({ section }: EducationEditorProps) {
 
       <Button onClick={handleAddEducation} className="w-full">
         <Plus className="w-4 h-4 mr-2" />
-        Add Education
+        Add Another Education
       </Button>
     </div>
   );
