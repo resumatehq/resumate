@@ -32,6 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { exportToPdf } from "@/utils/pdf-export";
 
 interface ResumeBuilderProps {
   initialResume?: IResume;
@@ -226,6 +227,40 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
     }
   };
 
+  const handleExport = async () => {
+    // Switch to full preview mode to ensure the entire resume is visible
+    const previousMode = previewMode;
+    setPreviewMode("full");
+
+    // Small delay to ensure the UI updates before capturing
+    setTimeout(async () => {
+      try {
+        // Build the filename with the resume title
+        const filename = `${resume?.title || "Resume"}.pdf`;
+
+        // Export the resume to PDF
+        await exportToPdf("resume-preview-container", filename);
+
+        toast({
+          title: "Success",
+          description: "Resume exported to PDF successfully",
+        });
+      } catch (error) {
+        console.error("Error exporting to PDF:", error);
+        toast({
+          title: "Error",
+          description: "Failed to export resume to PDF",
+          variant: "destructive",
+        });
+      } finally {
+        // Restore the previous preview mode
+        if (previousMode !== "full") {
+          setPreviewMode(previousMode);
+        }
+      }
+    }, 500);
+  };
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitleInput(e.target.value);
   };
@@ -318,7 +353,7 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
               <Save className="w-4 h-4 mr-2" />
               Save
             </Button>
-            <Button variant="default" size="sm">
+            <Button variant="default" size="sm" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>

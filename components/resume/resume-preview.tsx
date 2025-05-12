@@ -718,7 +718,10 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
   };
 
   return (
-    <div className="max-w-[850px] mx-auto bg-white p-8 shadow-lg">
+    <div
+      id="resume-preview-container"
+      className="max-w-[850px] mx-auto bg-white p-8 shadow-lg"
+    >
       <div className="space-y-6">
         {/* Personal Info section */}
         {personalSection && personalSection.enabled && (

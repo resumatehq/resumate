@@ -1,5 +1,5 @@
-'use client';
-import { Skeleton } from '@/components/ui/skeleton';
+"use client";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Edit,
   Target,
@@ -13,26 +13,26 @@ import {
   Copy,
   Clock,
   Plus,
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   useGetResumesQuery,
   useDeleteResumeMutation,
   useUpdateResumeMutation,
-} from '@/queries/useResume';
-import { IResume } from '@/schemas/resume.schema';
-import { useState } from 'react';
+} from "@/queries/useResume";
+import { IResume } from "@/schemas/resume.schema";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { toast } from '@/hooks/use-toast';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import NewResume from './newResume';
+} from "@/components/ui/dropdown-menu";
+import { toast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import NewResume from "./newResume";
 
 interface ResumeListProps {
   onCreateClick?: () => void;
@@ -51,14 +51,14 @@ export default function ResumeList({ onCreateClick }: ResumeListProps) {
     try {
       await deleteResumeMutation.mutateAsync(resumeId);
       toast({
-        title: 'Success',
-        description: 'Resume deleted successfully',
+        title: "Success",
+        description: "Resume deleted successfully",
       });
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error?.payload?.message || 'Failed to delete resume',
-        variant: 'destructive',
+        title: "Error",
+        description: error?.payload?.message || "Failed to delete resume",
+        variant: "destructive",
       });
     }
   };
@@ -133,11 +133,11 @@ function ResumeCard({
   const updateResumeMutation = useUpdateResumeMutation();
 
   const formattedDate = new Date(metadata.updatedAt).toLocaleDateString(
-    'en-US',
+    "en-US",
     {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     }
   );
 
@@ -148,7 +148,7 @@ function ResumeCard({
   };
 
   const handleTitleSubmit = async () => {
-    if (titleInput.trim() === '') {
+    if (titleInput.trim() === "") {
       setTitleInput(title); // Reset to original title if empty
       setIsEditingTitle(false);
       return;
@@ -160,14 +160,14 @@ function ResumeCard({
         data: { title: titleInput },
       });
       toast({
-        title: 'Success',
-        description: 'Resume title updated successfully',
+        title: "Success",
+        description: "Resume title updated successfully",
       });
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error?.payload?.message || 'Failed to update title',
-        variant: 'destructive',
+        title: "Error",
+        description: error?.payload?.message || "Failed to update title",
+        variant: "destructive",
       });
       setTitleInput(title); // Reset to original title on error
     }
@@ -175,9 +175,9 @@ function ResumeCard({
   };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleTitleSubmit();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsEditingTitle(false);
       setTitleInput(title);
     }
