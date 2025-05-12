@@ -5,6 +5,7 @@ import localFont from 'next/font/local';
 import '../styles/globals.css';
 import { ResumeProvider } from '@/context/resume-context';
 import { Providers } from '@/providers';
+import { Toaster } from '@/components/ui/toaster';
 
 const myFont = localFont({
   src: [
@@ -54,6 +55,7 @@ export default function RootLayout({
       >
         <Providers>
           <main className="w-full">{children}</main>
+          <Toaster />
         </Providers>
       </body>
     </html>

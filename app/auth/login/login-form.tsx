@@ -1,10 +1,10 @@
-import Logo from "@/components/logo";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { IconFidgetSpinner } from "@tabler/icons-react";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, UseFormSetError } from "react-hook-form";
+import Logo from '@/components/logo';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { IconFidgetSpinner } from '@tabler/icons-react';
+import Link from 'next/link';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, UseFormSetError } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -12,23 +12,23 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { useState, useEffect, useContext } from "react";
-import { LoginBody, LoginBodyType } from "@/schemas/auth.schema";
-import { useLoginMutation } from "@/queries/useAuth";
-import { toast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { UserContext } from "@/context/profileContext";
-import { useGetMeMutation } from "@/queries/useAccount";
-import { handleErrorApi } from "@/lib/utils";
-import envConfig from "@/config";
+} from '@/components/ui/form';
+import { useState, useEffect, useContext } from 'react';
+import { LoginBody, LoginBodyType } from '@/schemas/auth.schema';
+import { useLoginMutation } from '@/queries/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { UserContext } from '@/context/profileContext';
+
+import { handleErrorApi } from '@/lib/utils';
+import envConfig from '@/config';
 
 interface SignInFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export default function LoginForm({ className, ...props }: SignInFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const loginMutation = useLoginMutation();
-  const me = useGetMeMutation();
+  const { toast } = useToast();
 
   const { setUser } = useContext(UserContext) || {};
 
@@ -37,8 +37,8 @@ export default function LoginForm({ className, ...props }: SignInFormProps) {
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
@@ -48,19 +48,16 @@ export default function LoginForm({ className, ...props }: SignInFormProps) {
     try {
       console.log(data);
       const res = await loginMutation.mutateAsync(data);
-      console.log("dang nhap thanh cong", res.payload.data);
+      console.log('dang nhap thanh cong', res.payload.data);
       toast({
+        title: 'Login successfully',
         description: res.payload.message,
+        variant: 'success',
       });
       setUser?.(res.payload.data.user);
       // console.log('user', response.payload.data);
-      router.push("/app");
+      router.push('/app');
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.payload?.message ?? "Error unknown",
-        variant: "destructive",
-      });
       handleErrorApi({
         error,
         setError: form.setError,
@@ -150,7 +147,7 @@ export default function LoginForm({ className, ...props }: SignInFormProps) {
                   d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0C79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
                 ></path>
               </svg>
-            )}{" "}
+            )}{' '}
             Google
           </Button>
           <Button
@@ -179,7 +176,7 @@ export default function LoginForm({ className, ...props }: SignInFormProps) {
                   d="M256 256.002H134.335V134.336H256z"
                 ></path>
               </svg>
-            )}{" "}
+            )}{' '}
             Microsoft
           </Button>
         </div>
