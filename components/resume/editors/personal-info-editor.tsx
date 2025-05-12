@@ -5,7 +5,11 @@ import { IResumeSection, IPersonalInfoContent } from "@/schemas/resume.schema";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { generateProfessionalSummary } from "@/utils/form-ai-assistant";
+import { useToast } from "@/components/ui/use-toast";
 
 interface PersonalInfoEditorProps {
   section: IResumeSection;
@@ -13,6 +17,8 @@ interface PersonalInfoEditorProps {
 
 export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
   const { updateSectionContent } = useResume();
+  const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Add debugging to identify the issue
   console.log("PersonalInfoEditor - section:", section);
@@ -97,6 +103,36 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
     updateSectionContent(section._id!, [updatedContent]);
   };
 
+  const handleGenerateSummary = async () => {
+    if (!content.fullName || !content.jobTilte) {
+      toast({
+        title: "Missing information",
+        description: "Please enter your name and job title first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const summary = await generateProfessionalSummary(content);
+      handleChange("professionalSummary", summary);
+      toast({
+        title: "Summary generated",
+        description: "Professional summary has been generated successfully",
+      });
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate professional summary",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -178,7 +214,18 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="summary">Professional Summary</Label>
+        <div className="flex justify-between items-center">
+          <Label htmlFor="summary">Professional Summary</Label>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGenerateSummary}
+            disabled={isGenerating}
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {isGenerating ? "Generating..." : "Generate Summary"}
+          </Button>
+        </div>
         <Textarea
           id="summary"
           value={content.professionalSummary || ""}
