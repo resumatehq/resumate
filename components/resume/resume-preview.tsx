@@ -720,9 +720,27 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
   return (
     <div
       id="resume-preview-container"
-      className="max-w-[850px] mx-auto bg-white p-8 shadow-lg"
+      className="max-w-[850px] mx-auto bg-white p-8 shadow-lg relative"
     >
       <div className="space-y-6">
+        {/* Page guides with A4 dimensions */}
+        <div
+          className="absolute left-0 right-0 border-t-2 border-dashed border-blue-400 z-10 pointer-events-none"
+          style={{ top: "1120px" }}
+        >
+          <div className="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded absolute right-0 -top-3 opacity-80">
+            Page 1 End
+          </div>
+        </div>
+        <div
+          className="absolute left-0 right-0 border-t-2 border-dashed border-blue-400 z-10 pointer-events-none"
+          style={{ top: "2240px" }}
+        >
+          <div className="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded absolute right-0 -top-3 opacity-80">
+            Page 2 End
+          </div>
+        </div>
+
         {/* Personal Info section */}
         {personalSection && personalSection.enabled && (
           <div className="mb-6">{renderSectionContent(personalSection)}</div>

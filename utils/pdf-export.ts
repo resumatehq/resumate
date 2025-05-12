@@ -1,6 +1,11 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+// Constants for A4 paper dimensions
+const A4_WIDTH_PX = 794; // A4 width at 96 DPI
+const A4_HEIGHT_PX = 1123; // A4 height at 96 DPI (matches the preview page break)
+const PAGE_MARGIN = 20;
+
 /**
  * Exports a DOM element as a PDF file
  * @param elementId The ID of the element to export
@@ -16,9 +21,18 @@ export const exportToPdf = async (elementId: string, filename: string = 'resume.
 
     // Create a clone to avoid modifying the original element
     const clone = element.cloneNode(true) as HTMLElement;
-    clone.style.width = '794px'; // A4 width at 96 DPI (794px)
-    clone.style.padding = '20px';
+    
+    // Remove the page break indicators that are only for the preview
+    const pageBreakIndicators = clone.querySelectorAll('[class*="border-dashed border-blue-400"]');
+    pageBreakIndicators.forEach(indicator => {
+      indicator.parentNode?.removeChild(indicator);
+    });
+    
+    // Set styles for proper PDF rendering
+    clone.style.width = `${A4_WIDTH_PX}px`;
+    clone.style.padding = `${PAGE_MARGIN}px`;
     clone.style.boxSizing = 'border-box';
+    clone.style.margin = '0 auto'; // Center the content
     
     // Apply a style to override any problematic colors
     const styleElement = document.createElement('style');
@@ -28,6 +42,12 @@ export const exportToPdf = async (elementId: string, filename: string = 'resume.
       }
       [data-theme] {
         color-scheme: light !important;
+      }
+      @page {
+        margin: 0;
+      }
+      body {
+        margin: 0;
       }
     `;
     clone.appendChild(styleElement);
@@ -54,7 +74,7 @@ export const exportToPdf = async (elementId: string, filename: string = 'resume.
         }
       });
       
-      // Calculate PDF dimensions (A4)
+      // Calculate PDF dimensions
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -64,22 +84,35 @@ export const exportToPdf = async (elementId: string, filename: string = 'resume.
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const ratio = canvas.width / pdfWidth;
+      const contentWidth = pdfWidth - (PAGE_MARGIN * 2);
+      const ratio = canvas.width / contentWidth;
       const canvasHeight = canvas.height / ratio;
       
-      // Add image to PDF
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, canvasHeight);
+      // Function to add content to a page with margins
+      const addContentToPage = (yPosition: number = 0) => {
+        pdf.addImage(
+          imgData, 
+          'PNG', 
+          PAGE_MARGIN, // Left margin
+          PAGE_MARGIN + yPosition, // Top margin + position offset
+          contentWidth, 
+          canvasHeight
+        );
+      };
       
-      // If content exceeds page height, create additional pages
-      if (canvasHeight > pdfHeight) {
+      // Add first page with margins
+      addContentToPage();
+      
+      // If content exceeds page height, create additional pages with margins
+      if (canvasHeight > pdfHeight - (PAGE_MARGIN * 2)) {
         let remainingHeight = canvasHeight;
-        let position = -pdfHeight; // Starting position for the second page
+        let position = -(pdfHeight - (PAGE_MARGIN * 2)); // Starting position for the second page
         
-        while (remainingHeight > pdfHeight) {
+        while (remainingHeight > (pdfHeight - (PAGE_MARGIN * 2))) {
           pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeight);
-          remainingHeight -= pdfHeight;
-          position -= pdfHeight;
+          addContentToPage(position);
+          remainingHeight -= (pdfHeight - (PAGE_MARGIN * 2));
+          position -= (pdfHeight - (PAGE_MARGIN * 2));
         }
       }
       
