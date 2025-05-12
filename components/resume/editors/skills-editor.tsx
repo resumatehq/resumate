@@ -5,8 +5,10 @@ import { IResumeSection, ISkillContent } from "@/schemas/resume.schema";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { Plus, Trash2, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { generateSkillsSuggestions } from "@/utils/form-ai-assistant";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SkillsEditorProps {
   section: IResumeSection;
@@ -14,6 +16,9 @@ interface SkillsEditorProps {
 
 export function SkillsEditor({ section }: SkillsEditorProps) {
   const { updateSectionContent } = useResume();
+  const { toast } = useToast();
+  const [jobTitle, setJobTitle] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Default empty skills content
   const defaultSkills: ISkillContent = {
@@ -68,8 +73,77 @@ export function SkillsEditor({ section }: SkillsEditorProps) {
     updateSectionContent(section._id!, [updatedContent]);
   };
 
+  const handleGenerateSkills = async () => {
+    if (!jobTitle) {
+      toast({
+        title: "Missing information",
+        description: "Please enter a job title to generate skills",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const skills = await generateSkillsSuggestions(jobTitle);
+
+      // Add the first 5 skills to technical, next 5 to soft if available
+      const updatedContent = { ...content };
+
+      if (skills.length > 0) {
+        const technicalSkills = skills.slice(0, Math.min(skills.length, 5));
+        const softSkills = skills.slice(5, Math.min(skills.length, 10));
+
+        updatedContent.technical = [...technicalSkills];
+        if (softSkills.length > 0) {
+          updatedContent.soft = [...softSkills];
+        }
+      }
+
+      updateSectionContent(section._id!, [updatedContent]);
+
+      toast({
+        title: "Skills generated",
+        description: "Skills have been generated successfully",
+      });
+    } catch (error) {
+      console.error("Error generating skills:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate skills",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* AI Skills Generation */}
+      <div className="space-y-4 p-4 border rounded-md bg-gray-50">
+        <h3 className="font-medium">Generate Skills with AI</h3>
+        <div className="space-y-2">
+          <Label htmlFor="job-title">Job Title</Label>
+          <div className="flex gap-2">
+            <Input
+              id="job-title"
+              placeholder="e.g. Software Engineer"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+            />
+            <Button onClick={handleGenerateSkills} disabled={isGenerating}>
+              <Sparkles className="w-4 h-4 mr-2" />
+              {isGenerating ? "Generating..." : "Generate Skills"}
+            </Button>
+          </div>
+          <p className="text-xs text-gray-500">
+            Enter your target job title to get AI-suggested skills for your
+            resume
+          </p>
+        </div>
+      </div>
+
       {/* Technical Skills */}
       <div className="space-y-2">
         <div className="flex justify-between items-center">
