@@ -1,37 +1,25 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useResume } from '@/context/resume-context';
-import { IResumeSection } from '@/schemas/resume.schema';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { ChevronDown, ChevronUp, GripVertical, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { PersonalInfoEditor } from './editors/personal-info-editor';
-import { EducationEditor } from './editors/education-editor';
-import { ExperienceEditor } from './editors/experience-editor';
-import { SkillsEditor } from './editors/skills-editor';
-import { ProjectsEditor } from './editors/projects-editor';
-import { SummaryEditor } from './editors/summary-editor';
-
-// Temporary placeholder components until the real ones are implemented
-const CertificationsEditor = ({ section }: { section: IResumeSection }) => (
-  <div className="p-4 border rounded-md bg-gray-50">
-    <p className="text-sm text-gray-500">
-      Certifications editor will be implemented soon
-    </p>
-  </div>
-);
-
-const AwardsEditor = ({ section }: { section: IResumeSection }) => (
-  <div className="p-4 border rounded-md bg-gray-50">
-    <p className="text-sm text-gray-500">
-      Awards editor will be implemented soon
-    </p>
-  </div>
-);
+import { useState } from "react";
+import { useResume } from "@/context/resume-context";
+import { IResumeSection } from "@/schemas/resume.schema";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { ChevronDown, ChevronUp, GripVertical, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { PersonalInfoEditor } from "./editors/personal-info-editor";
+import { EducationEditor } from "./editors/education-editor";
+import { ExperienceEditor } from "./editors/experience-editor";
+import { SkillsEditor } from "./editors/skills-editor";
+import { ProjectsEditor } from "./editors/projects-editor";
+import { SummaryEditor } from "./editors/summary-editor";
+import { CertificationsEditor } from "./editors/certifications-editor";
+import { AwardsEditor } from "./editors/awards-editor";
+import { LanguagesEditor } from "./editors/languages-editor";
+import { InterestsEditor } from "./editors/interests-editor";
+import { VolunteerEditor } from "./editors/volunteer-editor";
 
 const CustomSectionEditor = ({ section }: { section: IResumeSection }) => (
   <div className="p-4 border rounded-md bg-gray-50">
@@ -124,23 +112,26 @@ export function SectionEditor({ section }: SectionEditorProps) {
         </div>
       </div>
 
-      <div className={cn('space-y-4', !isExpanded && 'hidden')}>
+      <div className={cn("space-y-4", !isExpanded && "hidden")}>
         {/* Section-specific editor will be rendered here based on section.type */}
-        {section.type === 'personal' && (
+        {section.type === "personal" && (
           <PersonalInfoEditor section={section} />
         )}
-        {section.type === 'summary' && <SummaryEditor section={section} />}
-        {section.type === 'education' && <EducationEditor section={section} />}
-        {section.type === 'experience' && (
+        {section.type === "summary" && <SummaryEditor section={section} />}
+        {section.type === "education" && <EducationEditor section={section} />}
+        {section.type === "experience" && (
           <ExperienceEditor section={section} />
         )}
-        {section.type === 'skills' && <SkillsEditor section={section} />}
-        {section.type === 'projects' && <ProjectsEditor section={section} />}
-        {section.type === 'certifications' && (
+        {section.type === "skills" && <SkillsEditor section={section} />}
+        {section.type === "projects" && <ProjectsEditor section={section} />}
+        {section.type === "certifications" && (
           <CertificationsEditor section={section} />
         )}
-        {section.type === 'awards' && <AwardsEditor section={section} />}
-        {section.type === 'custom' && <CustomSectionEditor section={section} />}
+        {section.type === "awards" && <AwardsEditor section={section} />}
+        {section.type === "languages" && <LanguagesEditor section={section} />}
+        {section.type === "interests" && <InterestsEditor section={section} />}
+        {section.type === "volunteer" && <VolunteerEditor section={section} />}
+        {section.type === "custom" && <CustomSectionEditor section={section} />}
       </div>
     </div>
   );

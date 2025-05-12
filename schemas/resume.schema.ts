@@ -19,11 +19,11 @@ export interface ISectionContent {
 }
 
 export interface IPersonalInfoContent extends ISectionContent {
-  fullName: string;
-  jobTilte: string;
-  email: string;
-  phone: string;
-  location: string;
+  fullName?: string;
+  jobTilte?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
   website?: string;
   profilePicture?: string;
   socialLinks?: {
@@ -36,7 +36,7 @@ export interface IPersonalInfoContent extends ISectionContent {
 }
 
 export interface IEducationContent extends ISectionContent {
-  institution: string;
+  institution?: string;
   degree?: string;
   fieldOfStudy?: string;
   startDate?: string;
@@ -48,8 +48,8 @@ export interface IEducationContent extends ISectionContent {
 }
 
 export interface IWorkExperienceContent extends ISectionContent {
-  company: string;
-  position: string;
+  company?: string;
+  position?: string;
   startDate?: string;
   endDate?: string | null;
   location?: string;
@@ -59,13 +59,13 @@ export interface IWorkExperienceContent extends ISectionContent {
 }
 
 export interface ISkillContent extends ISectionContent {
-  technical: string[];
-  soft: string[];
-  languages: string[];
+  technical?: string[];
+  soft?: string[];
+  languages?: string[];
 }
 
 export interface IProjectContent extends ISectionContent {
-  title: string;
+  title?: string;
   description?: string;
   role?: string;
   startDate?: string;
@@ -76,23 +76,43 @@ export interface IProjectContent extends ISectionContent {
 }
 
 export interface ICertificationContent extends ISectionContent {
-  name: string;
-  issuingOrganization: string;
-  issueDate: string;
+  name?: string;
+  issuingOrganization?: string;
+  issueDate?: string;
   credentialUrl?: string;
   description?: string;
 }
 
 export interface IAwardContent extends ISectionContent {
-  title: string;
-  issuingOrganization: string;
-  dateReceived: string;
+  title?: string;
+  issuingOrganization?: string;
+  dateReceived?: string;
   description?: string;
 }
 
+export interface ILanguageContent extends ISectionContent {
+  language?: string;
+  proficiency?: string;
+}
+
+export interface IInterestContent extends ISectionContent {
+  interest?: string;
+  description?: string;
+}
+
+export interface IVolunteerContent extends ISectionContent {
+  organization?: string;
+  role?: string;
+  startDate?: string;
+  endDate?: string;
+  current?: boolean;
+  description?: string;
+  highlights?: string[];
+}
+
 export interface ICustomSectionContent extends ISectionContent {
-  title: string;
-  content: string | Record<string, any>;
+  title?: string;
+  content?: string | Record<string, any>;
 }
 
 export interface IResumeSection {
