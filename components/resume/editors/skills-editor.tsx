@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { generateSkillsSuggestions } from "@/utils/form-ai-assistant";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface SkillsEditorProps {
   section: IResumeSection;

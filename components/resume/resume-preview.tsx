@@ -23,8 +23,10 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
   if (!resume) {
     return <div>Loading...</div>;
   }
+  console.log("vuong12312", resume);
 
   // Find specific sections
+
   const personalSection = resume.sections.find((s) => s.type === "personal");
   const summarySection = resume.sections.find((s) => s.type === "summary");
   const experienceSection = resume.sections.find(
@@ -110,11 +112,6 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
         }
       case "skills":
         try {
-          console.log(
-            "Skills content:",
-            JSON.stringify(section.content, null, 2)
-          );
-
           // Handle the complex skills format from the JSON example
           if (
             section.content &&

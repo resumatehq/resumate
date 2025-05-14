@@ -255,3 +255,44 @@ export interface CreateVersionType {
   versionName: string;
   description: string;
 }
+
+interface SharingOptions {
+  password: string | null;
+  expiresAt: Date;
+  allowDownload: boolean;
+  allowFeedback: boolean;
+  allowEmbed: boolean;
+}
+
+interface ResumeMetadata {
+  createdAt: Date;
+  updatedAt: Date;
+  isPublished: boolean;
+  currentVersion: number;
+  viewCount: number;
+  downloadCount: number;
+  shareableLink?: string;
+  sharingOptions?: SharingOptions;
+  lastPublishedAt?: Date;
+}
+
+interface ResumeAnalytics {
+  shareViews: Array<{
+    timestamp: Date;
+    ipHash: string;
+    userAgent: string;
+    referrer: string;
+  }>;
+}
+
+export type ResumeType = Omit<
+  IResume,
+  | 'userId'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'metadata'
+  | 'atsScore'
+  | 'keywords'
+  | 'aiSuggestions'
+  | 'analytics'
+>;

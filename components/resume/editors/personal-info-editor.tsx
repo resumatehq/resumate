@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { generateProfessionalSummary } from "@/utils/form-ai-assistant";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface PersonalInfoEditorProps {
   section: IResumeSection;
@@ -19,10 +19,6 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
   const { updateSectionContent } = useResume();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
-
-  // Add debugging to identify the issue
-  console.log("PersonalInfoEditor - section:", section);
-  console.log("PersonalInfoEditor - section.content:", section.content);
 
   // Safely extract content from either array or direct object format
   const getContent = () => {
@@ -52,7 +48,6 @@ export function PersonalInfoEditor({ section }: PersonalInfoEditorProps) {
   };
 
   const content = getContent();
-  console.log("PersonalInfoEditor - extracted content:", content);
 
   // Initialize content if it doesn't exist
   useEffect(() => {

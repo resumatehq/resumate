@@ -1,6 +1,6 @@
-import resumeApiRequest from '@/apiRequest/resume.api';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CreateResumeType, UpdateResumeType } from '@/schemas/resume.schema';
+import resumeApiRequest from "@/apiRequest/resume.api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { CreateResumeType, UpdateResumeType } from "@/schemas/resume.schema";
 
 interface ResumesResponse {
   message: string;
@@ -27,29 +27,29 @@ interface ResumesResponse {
 
 export const useGetResumesQuery = () => {
   return useQuery({
-    queryKey: ['resumes'],
+    queryKey: ["resumes"],
     queryFn: resumeApiRequest.getResumes,
   });
 };
 
 export const useGetResumeByIdQuery = (resumeId: string) => {
   return useQuery({
-    queryKey: ['resume', resumeId],
+    queryKey: ["resume", resumeId],
     queryFn: async () => {
       const response = await resumeApiRequest.getResumeById(resumeId);
-      console.log('API Response:', response); // Debug log
+      console.log("API Response:", response); // Debug log
 
-      // Extract the deeply nested resume data
-      if (response?.payload?.data?.resume?.data?.resume) {
-        return response.payload.data.resume.data.resume;
+      // Extract the resume data from the response
+      if (response?.payload?.data?.resume) {
+        return response.payload.data.resume;
       }
 
       // Fallback to empty resume to avoid undefined
       return {
-        userId: '',
-        title: '',
-        templateId: '',
-        language: 'en',
+        userId: "",
+        title: "",
+        templateId: "",
+        language: "en",
         sections: [],
         metadata: {
           createdAt: new Date().toISOString(),
@@ -84,7 +84,7 @@ export const useDeleteResumeMutation = () => {
     mutationFn: (resumeId: string) => resumeApiRequest.deleteResume(resumeId),
     onSuccess: () => {
       // Refetch resumes list after delete
-      queryClient.invalidateQueries({ queryKey: ['resumes'] });
+      queryClient.invalidateQueries({ queryKey: ["resumes"] });
     },
   });
 };
@@ -96,7 +96,7 @@ export const useCreateResumeMutation = () => {
       resumeApiRequest.createResume(resume),
     onSuccess: () => {
       // Refetch resumes list after create
-      queryClient.invalidateQueries({ queryKey: ['resumes'] });
+      queryClient.invalidateQueries({ queryKey: ["resumes"] });
     },
   });
 };
@@ -114,9 +114,9 @@ export const useUpdateResumeMutation = () => {
     onSuccess: (_, variables) => {
       // Refetch the specific resume and resumes list
       queryClient.invalidateQueries({
-        queryKey: ['resume', variables.resumeId],
+        queryKey: ["resume", variables.resumeId],
       });
-      queryClient.invalidateQueries({ queryKey: ['resumes'] });
+      queryClient.invalidateQueries({ queryKey: ["resumes"] });
     },
   });
 };

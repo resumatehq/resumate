@@ -21,8 +21,6 @@ export default function EditResumePage() {
   // Process the resume data to ensure it's properly structured
   useEffect(() => {
     if (resumeData) {
-      console.log("Raw API data:", JSON.stringify(resumeData, null, 2));
-
       // Create a deep copy to avoid reference issues
       const processedResume = JSON.parse(JSON.stringify(resumeData));
 
@@ -36,11 +34,6 @@ export default function EditResumePage() {
         (section: IResumeSection) => {
           // Check for personal info section
           if (section.type === "personal") {
-            console.log(
-              "Personal section from API:",
-              JSON.stringify(section, null, 2)
-            );
-
             // Ensure it has the right structure - always an array
             if (!Array.isArray(section.content)) {
               console.log("Restructuring personal section content");
