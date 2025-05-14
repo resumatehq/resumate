@@ -3,10 +3,12 @@ import resumeApiRequest from '@/apiRequest/resume.api';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { shareableLink: string } }
+  context: { params: { shareableLink: string } }
 ) {
   try {
-    const response = await resumeApiRequest.sGetSharedResume(params.shareableLink);
+    const { shareableLink } = await Promise.resolve(context.params);
+
+    const response = await resumeApiRequest.sGetSharedResume(shareableLink);
     return NextResponse.json(response.payload);
   } catch (error: any) {
     console.error(`Error fetching shared resume:`, error);

@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+
   const accessToken = request.cookies.get('access_token')?.value;
   const refreshToken = request.cookies.get('refresh_token')?.value;
 
@@ -13,7 +14,7 @@ export function middleware(request: NextRequest) {
   // 1. Trường hợp người dùng CHƯA đăng nhập
   if (!isAuthenticated) {
     // Cho phép truy cập trang landing page và login
-    if (pathname === '/' || pathname === '/auth/login') {
+    if (pathname === '/auth/login') {
       return NextResponse.next();
     }
 
@@ -66,5 +67,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/app/:path*', '/auth/login', '/refresh-token'],
+  matcher: [ '/app/:path*', '/auth/login', '/refresh-token'],
 };
