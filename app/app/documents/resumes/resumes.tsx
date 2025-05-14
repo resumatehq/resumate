@@ -33,6 +33,7 @@ import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import NewResume from "./newResume";
+import { LinkButton } from "@/components/ui/link-button";
 
 interface ResumeListProps {
   onCreateClick?: () => void;
@@ -94,13 +95,10 @@ export default function ResumeList({ onCreateClick }: ResumeListProps) {
         <p className="text-gray-500 mb-4">
           Create your first resume to get started with your job search!
         </p>
-        <Button
-          onClick={onCreateClick}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
+        <LinkButton href="/app/documents/resumes/new">
           <Plus className="h-4 w-4 mr-2" />
           Create Resume
-        </Button>
+        </LinkButton>
       </div>
     );
   }

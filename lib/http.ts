@@ -131,8 +131,8 @@ const request = async <Response>(
       } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
         if (isClient) {
           if (!clientLogoutRequest) {
-            clientLogoutRequest = fetch('auth/logout', {
-              method: 'POST',
+            clientLogoutRequest = fetch('api/auth/logout', {
+              method: 'DELETE',
               body: null,
               headers: { ...baseHeaders },
             });

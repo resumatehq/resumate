@@ -6,6 +6,7 @@ import { Metadata } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useContext } from "react";
 import { UserContext } from "@/context/profileContext";
+import { setAccessToken, setRefreshToken } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Google Login Redirect",
@@ -31,6 +32,8 @@ export default function Oauth() {
       if (count.current === 0) {
         mutateAsync({ access_token, refresh_token })
           .then(() => {
+            setAccessToken(access_token);
+            setRefreshToken(refresh_token);
             console.log("Tokens successfully saved to cookies");
 
             if (userParam && setUser) {
