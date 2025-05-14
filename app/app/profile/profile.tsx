@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Briefcase,
   Calendar,
@@ -17,62 +17,62 @@ import {
   Phone,
   Star,
   User,
-} from 'lucide-react';
-import Link from 'next/link';
-import { UserContext } from '@/context/profileContext';
+} from "lucide-react";
+import Link from "next/link";
+import { UserContext } from "@/context/profileContext";
 
 export default function ProfileView() {
   const { user } = React.useContext(UserContext) || {};
 
   // Sample skills and experience data (in a real app, this would come from the user data)
   const skills = [
-    'JavaScript',
-    'React',
-    'TypeScript',
-    'Node.js',
-    'UI/UX Design',
-    'Problem Solving',
-    'Team Leadership',
+    "JavaScript",
+    "React",
+    "TypeScript",
+    "Node.js",
+    "UI/UX Design",
+    "Problem Solving",
+    "Team Leadership",
   ];
 
   const workExperience = [
     {
-      company: 'Tech Innovations Inc.',
-      position: 'Senior Frontend Developer',
-      duration: '2019 - Present',
+      company: "Tech Innovations Inc.",
+      position: "Senior Frontend Developer",
+      duration: "2019 - Present",
     },
     {
-      company: 'Digital Solutions LLC',
-      position: 'Frontend Developer',
-      duration: '2017 - 2019',
+      company: "Digital Solutions LLC",
+      position: "Frontend Developer",
+      duration: "2017 - 2019",
     },
     {
-      company: 'Web Creators Co.',
-      position: 'Junior Developer',
-      duration: '2015 - 2017',
+      company: "Web Creators Co.",
+      position: "Junior Developer",
+      duration: "2015 - 2017",
     },
   ];
 
   const education = [
     {
-      institution: 'Stanford University',
-      degree: 'Master of Computer Science',
-      year: '2015-2017',
+      institution: "Stanford University",
+      degree: "Master of Computer Science",
+      year: "2015-2017",
     },
     {
-      institution: 'University of California',
-      degree: 'Bachelor of Science in Computer Engineering',
-      year: '2011-2015',
+      institution: "University of California",
+      degree: "Bachelor of Science in Computer Engineering",
+      year: "2011-2015",
     },
   ];
 
   const formatDateOfBirth = (dateString: string) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
   };
 
@@ -95,36 +95,31 @@ export default function ProfileView() {
             <div className="flex flex-col items-center text-center">
               <Avatar className="h-24 w-24 mb-4 bg-gray-400 text-white p-2 rounded-full">
                 <AvatarImage
-                  src={user?.avatar_url || ''}
+                  src={user?.avatar_url || ""}
                   alt={user?.username}
                   className="rounded-full object-cover"
                 />
                 <AvatarFallback className="text-2xl bg-primary/10 text-primary">
                   {user?.username
                     ? user?.username.substring(0, 2).toUpperCase()
-                    : 'U'}
+                    : "U"}
                 </AvatarFallback>
               </Avatar>
 
-              <div className="relative">
+              <div className="relative flex justify-center items-center">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                  {user?.username || 'Username'}
-                  <Badge
-                    variant="outline"
-                    className="absolute bottom-5 bg-gradient-to-r from-green-400 to-blue-500 text-white text-sm font-semibold rounded-lg px-2 py-1.5"
-                  >
-                    {user?.tier || 'Standard'}
-                  </Badge>
+                  {user?.username || "Username"}
+                  <Badge variant="outline">{user?.tier || "Standard"}</Badge>
                 </h2>
               </div>
               <p className="text-base text-gray-500">
-                {user?.industry || 'Industry'}
+                {user?.industry || "Industry"}
               </p>
 
               <div className="flex items-center mt-2 text-gray-500">
                 <MapPin className="h-4 w-4 mr-1" />
                 <span className="text-base">
-                  {user?.location || 'Location'}
+                  {user?.location || "Location"}
                 </span>
               </div>
 
@@ -134,13 +129,13 @@ export default function ProfileView() {
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-gray-500" />
                   <span className="text-base truncate text-gray-700">
-                    {user?.email || 'email@example.com'}
+                    {user?.email || "email@example.com"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-gray-500" />
                   <span className="text-base text-gray-700">
-                    {user?.phone || 'Phone number'}
+                    {user?.phone || "Phone number"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -148,7 +143,7 @@ export default function ProfileView() {
                   <span className="text-base text-gray-700">
                     {user?.date_of_birth
                       ? formatDateOfBirth(user.date_of_birth)
-                      : 'Date of birth'}
+                      : "Date of birth"}
                   </span>
                 </div>
               </div>
@@ -281,7 +276,7 @@ export default function ProfileView() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700 mb-4">
-                    {user?.bio || 'No bio information available.'}
+                    {user?.bio || "No bio information available."}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-1">
@@ -289,7 +284,7 @@ export default function ProfileView() {
                         Industry
                       </h3>
                       <p className="text-gray-800">
-                        {user?.industry || 'Not specified'}
+                        {user?.industry || "Not specified"}
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -297,7 +292,7 @@ export default function ProfileView() {
                         Experience
                       </h3>
                       <p className="text-gray-800">
-                        {user?.experience || 'Not specified'}
+                        {user?.experience || "Not specified"}
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -307,12 +302,12 @@ export default function ProfileView() {
                       <Badge
                         variant="outline"
                         className={
-                          user?.status === 'online'
-                            ? 'bg-green-50 text-green-700 border-green-200 text-base font-medium'
-                            : 'border-gray-300 text-gray-600 text-base font-medium'
+                          user?.status === "online"
+                            ? "bg-green-50 text-green-700 border-green-200 text-base font-medium"
+                            : "border-gray-300 text-gray-600 text-base font-medium"
                         }
                       >
-                        {user?.status || 'Not specified'}
+                        {user?.status || "Not specified"}
                       </Badge>
                     </div>
                     <div className="space-y-1">

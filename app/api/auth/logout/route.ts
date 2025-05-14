@@ -2,11 +2,12 @@ import authApiRequest from '@/apiRequest/auth.api';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+export async function DELETE(request: Request) {
   const cookieStore = await cookies(); // Sử dụng await để lấy giá trị từ cookies
   const access_token = cookieStore.get('access_token')?.value;
   const refresh_token = cookieStore.get('refresh_token')?.value;
 
+  console.log("access_token", access_token , "refresh_token" , refresh_token)
   const response = NextResponse.json(
     {
       message:
@@ -28,13 +29,14 @@ export async function POST(request: Request) {
     path: '/',
     expires: new Date(0),
   });
+  
 
   if (!access_token || !refresh_token) {
     return response;
   }
 
   try {
-    const res = await authApiRequest.sLogout({
+    await authApiRequest.sLogout({
       access_token,
       refresh_token,
     });
