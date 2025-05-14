@@ -13,7 +13,7 @@ import { Plus, Trash2, Sparkles } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useEffect, useState } from "react";
 import { generateJobDescriptions } from "@/utils/form-ai-assistant";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface ExperienceEditorProps {
   section: IResumeSection;

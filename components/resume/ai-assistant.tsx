@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
 import { IResume } from "@/schemas/resume.schema";
 import {
   getJobDescriptionSuggestions,
@@ -39,6 +38,7 @@ import {
   getOptimizedResume,
 } from "@/utils/resume-ai-assistant";
 import { useResume } from "@/context/resume-context";
+import { useToast } from "@/hooks/use-toast";
 
 interface ResumeAIAssistantProps {
   resume: IResume;

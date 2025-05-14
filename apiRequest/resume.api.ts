@@ -20,6 +20,11 @@ const resumeApiRequest = {
       baseUrl: '',
     }),
 
+  getSharedResume: (shareableLink: string) =>
+    http.get<ResumeResponse>(`api/resume/shared/${shareableLink}`, {
+      baseUrl: '',
+    }),
+
   createResume: (data: CreateResumeType) =>
     http.post<ResumeType>('api/resume', data, {
       baseUrl: '',
@@ -49,6 +54,9 @@ const resumeApiRequest = {
         Authorization: `Bearer ${token}`,
       },
     }),
+
+  sGetSharedResume: (shareableLink: string) =>
+    http.get<ResumeResponse>(`resumes/shared/${shareableLink}`),
 
   sCreateResume: (data: CreateResumeType, token: string) =>
     http.post<ResumeType>('resumes', data, {
@@ -88,6 +96,7 @@ const resumeApiRequest = {
 
   deleteSection: (resumeId: string, sectionId: string) =>
     http.delete(`/resumes/${resumeId}/sections/${sectionId}`),
+
   toggleSectionVisibility: (
     resumeId: string,
     sectionId: string,
@@ -101,6 +110,7 @@ const resumeApiRequest = {
     resumeId: string,
     sectionOrders: { sectionId: string; order: number }[]
   ) => http.post(`/resumes/${resumeId}/sections/reorder`, { sectionOrders }),
+
   saveContinueSection: (resumeId: string, sectionId: string) =>
     http.put(`/resumes/${resumeId}/sections/${sectionId}/save-continue`, {}),
 
@@ -111,6 +121,7 @@ const resumeApiRequest = {
     resumeId: string,
     data: { versionName: string; description: string }
   ) => http.post(`/resumes/${resumeId}/versions`, data),
+
   restoreVersion: (resumeId: string, versionNumber: number) =>
     http.post(`/resumes/${resumeId}/versions/${versionNumber}/restore`, {}),
 

@@ -20,11 +20,13 @@ import {
 import { ResumePreview } from "@/components/resume/resume-preview";
 import { exportToPdf } from "@/utils/pdf-export";
 import { toast } from "@/hooks/use-toast";
+import { useResume } from "@/context/resume-context";
 
 export default function ExportPage() {
   const [activeTab, setActiveTab] = useState("preview");
   const [copied, setCopied] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("professional");
+  const { resume } = useResume();
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(
@@ -50,6 +52,17 @@ export default function ExportPage() {
       });
     }
   };
+
+  if (!resume) {
+    return (
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-medium text-gray-700">Loading resume...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -86,7 +99,7 @@ export default function ExportPage() {
                   <Card>
                     <CardContent className="p-6">
                       <div className="bg-white border rounded-lg overflow-hidden">
-                        <ResumePreview template={selectedTemplate} />
+                        <ResumePreview resume={resume} />
                       </div>
                     </CardContent>
                   </Card>
@@ -205,19 +218,9 @@ export default function ExportPage() {
                             />
                             <label
                               htmlFor="password-protect"
-                              className="text-sm"
+                              className="text-sm text-muted-foreground"
                             >
                               Password protect this resume
-                            </label>
-                          </div>
-                          <div className="flex items-center gap-2 mt-2">
-                            <input
-                              type="checkbox"
-                              id="expiration"
-                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                            />
-                            <label htmlFor="expiration" className="text-sm">
-                              Set link expiration (30 days)
                             </label>
                           </div>
                         </div>
@@ -228,55 +231,59 @@ export default function ExportPage() {
               </Tabs>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <Card>
-                <CardContent className="p-4">
-                  <h3 className="font-medium mb-3">Resume Actions</h3>
-                  <div className="space-y-2">
-                    <Button className="w-full gap-2" onClick={handleExportPdf}>
-                      <Download className="h-4 w-4" />
-                      Download PDF
-                    </Button>
-                    <Button variant="outline" className="w-full gap-2">
-                      <Share2 className="h-4 w-4" />
-                      Share Resume
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
+                <CardContent className="p-6">
                   <h3 className="font-medium mb-3">Template</h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     {["professional", "modern", "minimal"].map((template) => (
-                      <div
+                      <button
                         key={template}
-                        className={`border rounded p-1 cursor-pointer ${
+                        className={`p-2 text-sm rounded border ${
                           selectedTemplate === template
-                            ? "border-primary"
-                            : "border-muted"
+                            ? "border-primary bg-primary/10"
+                            : "border-input hover:bg-muted"
                         }`}
                         onClick={() => setSelectedTemplate(template)}
                       >
-                        <div className="aspect-[3/4] bg-muted flex items-center justify-center text-xs capitalize">
-                          {template}
-                        </div>
-                      </div>
+                        {template}
+                      </button>
                     ))}
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="p-4">
-                  <h3 className="font-medium mb-3">Tips</h3>
-                  <ul className="text-sm space-y-2 text-muted-foreground">
-                    <li>• Send PDF format for job applications</li>
-                    <li>• Use DOCX if you need to make edits</li>
-                    <li>• Share your resume link for online applications</li>
-                    <li>• Update your resume regularly</li>
-                  </ul>
+                <CardContent className="p-6">
+                  <h3 className="font-medium mb-3">Export Settings</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="include-photo"
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      <label
+                        htmlFor="include-photo"
+                        className="text-sm text-muted-foreground"
+                      >
+                        Include photo
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="include-contact"
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      <label
+                        htmlFor="include-contact"
+                        className="text-sm text-muted-foreground"
+                      >
+                        Include contact information
+                      </label>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

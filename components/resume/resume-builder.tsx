@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useResume } from '@/context/resume-context';
-import type { IResume } from '@/schemas/resume.schema';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from "react";
+import { useResume } from "@/context/resume-context";
+import type { IResume } from "@/schemas/resume.schema";
+import { Button } from "@/components/ui/button";
 import {
   Plus,
   Save,
@@ -13,19 +13,20 @@ import {
   Undo,
   Redo,
   ChevronDown,
-} from 'lucide-react';
-import type { SectionType } from '@/schemas/resume.schema';
-import { SectionEditor, AVAILABLE_SECTION_TYPES } from './section-editor';
-import { ResumePreview } from './resume-preview';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
+  Share2,
+} from "lucide-react";
+import type { SectionType } from "@/schemas/resume.schema";
+import { SectionEditor, AVAILABLE_SECTION_TYPES } from "./section-editor";
+import { ResumePreview } from "./resume-preview";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
 import {
   useCreateResumeMutation,
   useUpdateResumeMutation,
-} from '@/queries/useResume';
-import { toast } from '@/hooks/use-toast';
-import type { CreateResumeType } from '@/schemas/resume.schema';
-import { useRouter } from 'next/navigation';
+} from "@/queries/useResume";
+import { toast } from "@/hooks/use-toast";
+import type { CreateResumeType } from "@/schemas/resume.schema";
+import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { exportToPdf } from "@/utils/pdf-export";
 import { ResumeAIAssistant } from "./ai-assistant";
+import { ShareResumeDialog } from "./share-resume-dialog";
 
 interface ResumeBuilderProps {
   initialResume?: IResume;
@@ -41,32 +43,33 @@ interface ResumeBuilderProps {
 
 // Define section types with user-friendly labels
 const SECTION_TYPE_LABELS: Record<SectionType, string> = {
-  personal: 'Personal Information',
-  education: 'Education',
-  experience: 'Work Experience',
-  skills: 'Skills',
-  projects: 'Projects',
-  certifications: 'Certifications',
-  awards: 'Awards',
-  languages: 'Languages',
-  interests: 'Interests',
-  volunteer: 'Volunteer Experience',
-  summary: 'Summary',
-  references: 'References',
-  publications: 'Publications',
-  custom: 'Custom Section',
+  personal: "Personal Information",
+  education: "Education",
+  experience: "Work Experience",
+  skills: "Skills",
+  projects: "Projects",
+  certifications: "Certifications",
+  awards: "Awards",
+  languages: "Languages",
+  interests: "Interests",
+  volunteer: "Volunteer Experience",
+  summary: "Summary",
+  references: "References",
+  publications: "Publications",
+  custom: "Custom Section",
 };
 
 export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   const { resume, setResume, addSection, undo, redo, canUndo, canRedo } =
     useResume();
 
-  const [previewMode, setPreviewMode] = useState<'split' | 'full' | 'hidden'>(
-    'split'
+  const [previewMode, setPreviewMode] = useState<"split" | "full" | "hidden">(
+    "split"
   );
-  const [activeTab, setActiveTab] = useState('edit');
+  const [activeTab, setActiveTab] = useState("edit");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [titleInput, setTitleInput] = useState('');
+  const [titleInput, setTitleInput] = useState("");
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   const createResumeMutation = useCreateResumeMutation();
   const updateResumeMutation = useUpdateResumeMutation();
@@ -74,42 +77,28 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
 
   // Improved initialResume handling
   useEffect(() => {
-    console.log(
-      'useEffect triggered with initialResume:',
-      JSON.stringify(initialResume, null, 2)
-    );
-
     if (initialResume) {
-      console.log(
-        'Personal Info Content:',
-        JSON.stringify(
-          initialResume.sections.find((s) => s.type === 'personal')?.content,
-          null,
-          2
-        )
-      );
-
       // Process initialResume to ensure consistent format
       const processedResume = { ...initialResume };
 
       // Ensure personal info section has content in array format
       const personalSection = processedResume.sections.find(
-        (s) => s.type === 'personal'
+        (s) => s.type === "personal"
       );
       if (personalSection && !Array.isArray(personalSection.content)) {
-        console.log('Converting personal section content to array format');
+        console.log("Converting personal section content to array format");
         personalSection.content = [personalSection.content || {}];
       }
 
       // Make sure we're setting the resume with a deep copy to avoid reference issues
       setResume(JSON.parse(JSON.stringify(processedResume)));
-      console.log('Resume data set in context');
+      console.log("Resume data set in context");
     }
   }, [initialResume, setResume]);
 
   // Check if resume exists and has sections
   if (!resume || !Array.isArray(resume.sections)) {
-    console.log('Showing loading state. Resume:', resume);
+    console.log("Showing loading state. Resume:", resume);
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -128,11 +117,11 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
       resume?.sections.filter((s) => s.type === type) || [];
 
     // If it's a unique section type that already exists, don't add it again
-    if (type === 'personal' && existingSections.length > 0) {
+    if (type === "personal" && existingSections.length > 0) {
       toast({
-        title: 'Section already exists',
-        description: 'You can only have one Personal Information section',
-        variant: 'destructive',
+        title: "Section already exists",
+        description: "You can only have one Personal Information section",
+        variant: "destructive",
       });
       return;
     }
@@ -141,7 +130,7 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   };
 
   const isUniqueSection = (type: SectionType): boolean => {
-    return type === 'personal';
+    return type === "personal";
   };
 
   const canAddSection = (type: SectionType): boolean => {
@@ -155,12 +144,12 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   };
 
   const togglePreviewMode = () => {
-    if (previewMode === 'split') {
-      setPreviewMode('full');
-    } else if (previewMode === 'full') {
-      setPreviewMode('hidden');
+    if (previewMode === "split") {
+      setPreviewMode("full");
+    } else if (previewMode === "full") {
+      setPreviewMode("hidden");
     } else {
-      setPreviewMode('split');
+      setPreviewMode("split");
     }
   };
 
@@ -170,8 +159,8 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
     try {
       // Hiển thị trạng thái đang lưu
       toast({
-        title: 'Saving...',
-        description: 'Please wait while we save your resume',
+        title: "Saving...",
+        description: "Please wait while we save your resume",
       });
 
       // Chuẩn bị dữ liệu theo CreateResumeType
@@ -183,8 +172,8 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
           ...section,
           content: section.content || [],
           settings: section.settings || {
-            visibility: 'public',
-            layout: 'standard',
+            visibility: "public",
+            layout: "standard",
             styling: {},
           },
         })),
@@ -201,18 +190,18 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
           data: resumeData,
         });
 
-        console.log('cap nhat thanh cong');
+        console.log("cap nhat thanh cong");
         toast({
-          title: 'Update',
-          description: 'Resume updated successfully',
-          variant: 'success',
+          title: "Update",
+          description: "Resume updated successfully",
+          variant: "success",
         });
       } else {
         response = await createResumeMutation.mutateAsync(resumeData);
         toast({
-          title: 'Create',
-          description: 'Resume created successfully',
-          variant: 'success',
+          title: "Create",
+          description: "Resume created successfully",
+          variant: "success",
         });
 
         // Chuyển hướng đến trang edit resume chỉ khi tạo mới
@@ -221,11 +210,11 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
         }
       }
     } catch (error: any) {
-      console.error('Error saving resume:', error);
+      console.error("Error saving resume:", error);
       toast({
-        title: 'Error',
-        description: error?.payload?.message || 'Failed to save resume',
-        variant: 'destructive',
+        title: "Error",
+        description: error?.payload?.message || "Failed to save resume",
+        variant: "destructive",
       });
     }
   };
@@ -233,31 +222,31 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   const handleExport = async () => {
     // Switch to full preview mode to ensure the entire resume is visible
     const previousMode = previewMode;
-    setPreviewMode('full');
+    setPreviewMode("full");
 
     // Small delay to ensure the UI updates before capturing
     setTimeout(async () => {
       try {
         // Build the filename with the resume title
-        const filename = `${resume?.title || 'Resume'}.pdf`;
+        const filename = `${resume?.title || "Resume"}.pdf`;
 
         // Export the resume to PDF
-        await exportToPdf('resume-preview-container', filename);
+        await exportToPdf("resume-preview-container", filename);
 
         toast({
-          title: 'Success',
-          description: 'Resume exported to PDF successfully',
+          title: "Success",
+          description: "Resume exported to PDF successfully",
         });
       } catch (error) {
-        console.error('Error exporting to PDF:', error);
+        console.error("Error exporting to PDF:", error);
         toast({
-          title: 'Error',
-          description: 'Failed to export resume to PDF',
-          variant: 'destructive',
+          title: "Error",
+          description: "Failed to export resume to PDF",
+          variant: "destructive",
         });
       } finally {
         // Restore the previous preview mode
-        if (previousMode !== 'full') {
+        if (previousMode !== "full") {
           setPreviewMode(previousMode);
         }
       }
@@ -279,11 +268,11 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
   };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleTitleSubmit();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsEditingTitle(false);
-      setTitleInput(resume?.title || '');
+      setTitleInput(resume?.title || "");
     }
   };
 
@@ -307,10 +296,10 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
               className="text-2xl font-bold text-gray-800 cursor-pointer hover:text-blue-600"
               onClick={() => {
                 setIsEditingTitle(true);
-                setTitleInput(resume?.title || '');
+                setTitleInput(resume?.title || "");
               }}
             >
-              {resume?.title || 'Untitled Resume'}
+              {resume?.title || "Untitled Resume"}
             </h1>
           )}
           <div className="flex items-center space-x-2">
@@ -319,7 +308,7 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
               size="sm"
               onClick={undo}
               disabled={!canUndo}
-              className={!canUndo ? 'opacity-50 cursor-not-allowed' : ''}
+              className={!canUndo ? "opacity-50 cursor-not-allowed" : ""}
             >
               <Undo className="w-4 h-4 mr-2" />
               Undo
@@ -329,18 +318,18 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
               size="sm"
               onClick={redo}
               disabled={!canRedo}
-              className={!canRedo ? 'opacity-50 cursor-not-allowed' : ''}
+              className={!canRedo ? "opacity-50 cursor-not-allowed" : ""}
             >
               <Redo className="w-4 h-4 mr-2" />
               Redo
             </Button>
             <Button variant="outline" size="sm" onClick={togglePreviewMode}>
-              {previewMode === 'hidden' ? (
+              {previewMode === "hidden" ? (
                 <>
                   <Eye className="w-4 h-4 mr-2" />
                   Show Preview
                 </>
-              ) : previewMode === 'full' ? (
+              ) : previewMode === "full" ? (
                 <>
                   <EyeOff className="w-4 h-4 mr-2" />
                   Hide Preview
@@ -356,6 +345,14 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
               <Save className="w-4 h-4 mr-2" />
               Save
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsShareDialogOpen(true)}
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
             <Button variant="default" size="sm" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export
@@ -367,10 +364,10 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
       {/* Main content */}
       <div className="flex-1 overflow-hidden flex">
         {/* Editor area - hidden in full preview mode */}
-        {previewMode !== 'full' && (
+        {previewMode !== "full" && (
           <div
             className={`${
-              previewMode === 'split' ? 'w-1/2' : 'w-full'
+              previewMode === "split" ? "w-1/2" : "w-full"
             } h-full overflow-y-auto border-r`}
           >
             <div className="p-6">
@@ -397,7 +394,7 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
                         <DropdownMenuContent align="end">
                           {AVAILABLE_SECTION_TYPES.filter(
                             (sectionType) =>
-                              sectionType !== 'summary' &&
+                              sectionType !== "summary" &&
                               canAddSection(sectionType)
                           ).map((sectionType) => (
                             <DropdownMenuItem
@@ -487,10 +484,10 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
         )}
 
         {/* Preview area - hidden in hidden preview mode */}
-        {previewMode !== 'hidden' && (
+        {previewMode !== "hidden" && (
           <div
             className={`${
-              previewMode === 'split' ? 'w-1/2' : 'w-full'
+              previewMode === "split" ? "w-1/2" : "w-full"
             } h-full overflow-y-auto bg-gray-100`}
           >
             <div className="p-6 flex justify-center">
@@ -501,6 +498,14 @@ export function ResumeBuilder({ initialResume }: ResumeBuilderProps) {
           </div>
         )}
       </div>
+
+      {resume?._id && (
+        <ShareResumeDialog
+          isOpen={isShareDialogOpen}
+          onClose={() => setIsShareDialogOpen(false)}
+          resumeId={resume._id}
+        />
+      )}
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { generateEducationAchievements } from "@/utils/form-ai-assistant";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface EducationEditorProps {
   section: IResumeSection;
